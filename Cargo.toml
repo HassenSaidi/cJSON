@@ -1,0 +1,12 @@
+[package]
+name = "cjson"
+authors = ["En2Rust"]
+version = "0.0.0"
+publish = false
+edition = "2021"
+autobins = false
+
+[lib]
+name = "cjson"
+path = "cjson-lib.rs"
+crate-type = ["staticlib", "rlib"]
