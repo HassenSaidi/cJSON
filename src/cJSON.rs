@@ -1,0 +1,4 @@
+/*
+This file contains the main cJSON file.
+This file is the translation of the original cJSON C implementation in Rust.
+*/
