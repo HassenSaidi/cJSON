@@ -39,6 +39,7 @@ pub struct CJSON {
 }
 
 
+// create a new instance
 pub fn cJSON_New_Item() -> CJSON {
     CJSON {
         next: None,
@@ -51,3 +52,13 @@ pub fn cJSON_New_Item() -> CJSON {
         string: None,
         }
     }
+
+
+// The following 
+/* Create basic types: */
+pub fn cJSON_CreateNull() -> CJSON {
+    let mut item = cJSON_New_Item();
+    item.type_ = cJSON_NULL;
+    item
+}
+
