@@ -27,7 +27,7 @@ const cJSON_StringIsConst: u32 = 512;
 // CJSON structure
 // type is renamed to type_
 #[derive(Debug)]
-pub struct CJSON {
+pub struct cJSON {
     pub next: Option<Box<CJSON>>,
     pub prev: Option<Box<CJSON>>, // Raw mutable pointer
     pub child: Option<Box<CJSON>>,
@@ -37,3 +37,17 @@ pub struct CJSON {
     pub valuedouble: f64,
     pub string: Option<String>,
 }
+
+
+pub fn cJSON_New_Item() -> cJSON {
+    {
+        next: None,
+        prev: None,
+        child: None,
+        type_: 0,
+        valuestring: None,
+        valueint: 0,
+        valuedouble: 0.0,
+        string: None,
+        }
+    }
