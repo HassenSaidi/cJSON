@@ -108,14 +108,13 @@ pub fn cJSON_CreateObject()-> CJSON {
     item
 }
 
-pub fn cJSON_CreateRa(raw: &str) -> Option<Self> {
+pub fn cJSON_CreateRa(raw: &str) -> CJSON {
     let mut item = cJSON_New_Item();
     item.type_ = cJSON_Raw;
     item.valuestring = if raw.is_empty() {
         None    
         } else {
             item.valuestring = Some(raw.to_string());
-            Some(item)
         };
     item
 }
