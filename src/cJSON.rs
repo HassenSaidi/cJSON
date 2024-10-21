@@ -165,7 +165,7 @@ fn build_linked_list(mut items: Vec<CJSON>) -> Option<Box<CJSON>> {
 
 
 /// Creates a `CJSON` instance representing a JSON array of strings.
-pub fn cjson_create_string_array(strings: &[&str]) -> Option<CJSON> {
+pub fn cJSON_CreateStringArray(strings: &[&str]) -> Option<CJSON> {
     if strings.is_empty() {
         return None;
     }
