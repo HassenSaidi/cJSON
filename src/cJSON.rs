@@ -101,21 +101,21 @@ mod tests {
     assert_eq!(array.borrow().type_, CJSON_ARRAY);
 
     // Check the first child
-    let childv = array.borrow_mut().child.clone().expect("Array should have a child");
+    let mut childv = array.borrow_mut().child.clone().expect("Array should have a child");
     assert_eq!(childv.borrow().type_, CJSON_STRING);
     assert_eq!(childv.borrow().valuestring, Some("Hello".to_string()));
 
     // Move to the next child
-    childv = child.borrow_mut().next.clone().expect("First child should have a next");
+    childv = childv.borrow_mut().next.clone().expect("First child should have a next");
     assert_eq!(childv.borrow().type_, CJSON_STRING);
     assert_eq!(childv.borrow().valuestring, Some("world".to_string()));
 
     // Move to the next child
-    childv = child.borrow_mut().next.clone().expect("Second child should have a next");
+    childv = childv.borrow_mut().next.clone().expect("Second child should have a next");
     assert_eq!(childv.borrow().type_, CJSON_STRING);
     assert_eq!(childv.borrow().valuestring, Some("Rust".to_string()));
 
     // Ensure that there are no more children
-    assert!(child.borrow().next.is_none(), "There should be no more children");
+    assert!(childv.borrow().next.is_none(), "There should be no more children");
     }
 }
