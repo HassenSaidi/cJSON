@@ -108,7 +108,7 @@ pub fn cJSON_CreateObject()-> CJSON {
     item
 }
 
-pub fn cJSON_CreateRa(raw: &str) -> CJSON {
+pub fn cJSON_CreateRaw(raw: &str) -> CJSON {
     let mut item = cJSON_New_Item();
     item.type_ = cJSON_Raw;
     item.valuestring = if raw.is_empty() {
@@ -118,3 +118,47 @@ pub fn cJSON_CreateRa(raw: &str) -> CJSON {
         };
     item
 }
+
+
+/* Create Arrays: */
+
+/// Builds a linked list from a vector of `CJSON` items.
+fn build_linked_list(mut items: Vec<CJSON>) -> Option<Box<CJSON>> {
+    if items.is_empty() {
+        return None;
+    }
+
+    let first_item = items.remove(0);
+    let mut head = Box::new(first_item);
+    let mut current = &mut head;
+
+    for item in items {
+        let mut boxed_item = Box::new(item);
+        boxed_item.prev = Some(Box::new((*current).clone()));
+        current.next = Some(boxed_item);
+        current = current.next.as_mut().unwrap();
+    }
+
+    Some(head)
+}
+
+/// Creates a `CJSON` instance representing a JSON array of integers.
+    pub fn cJSON_CreateIntArray(numbers: &[i32]) -> Option(CJSON) {
+        if numbers.is_empty() {
+            return None;
+        }
+
+        let mut array = cJSON_New_Item();
+        array.type_ = cJSON_Array;
+
+        let mut children = Vec::new();
+
+        for &number in numbers {
+            let number_cjson = cJSON_CreateNumber(number as f64);
+            children.push(number_cjson);
+        }
+
+        array.child = build_linked_list(children);
+        Some(array)
+    }
+
