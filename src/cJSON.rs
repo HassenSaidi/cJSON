@@ -114,7 +114,7 @@ pub fn cJSON_CreateRa(raw: &str) -> CJSON {
     item.valuestring = if raw.is_empty() {
         None    
         } else {
-            Some(raw.to_string());
+            Some(raw.to_string())
         };
     item
 }
