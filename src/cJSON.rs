@@ -88,29 +88,34 @@ pub fn cjson_create_string_array(strings: &[&str]) -> Option<Rc<RefCell<CJSON>>>
 }
 
 
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-fn test_cjson_create_string_array() {
-    let strings = ["Hello", "world", "Rust"];
-    let array = cjson_create_string_array(&strings).unwrap();
+    #[test]
+    fn test_cjson_create_string_array() {
+        let strings = ["Hello", "world", "Rust"];
+        let array = cjson_create_string_array(&strings).unwrap();
 
-    // Check that the type is CJSON_ARRAY
-    assert_eq!(array.borrow().type_, CJSON_ARRAY);
+        // Check that the type is CJSON_ARRAY
+        assert_eq!(array.borrow().type_, CJSON_ARRAY);
 
-    // Check the first child
-    let mut child = array.borrow().child.clone().expect("Array should have a child");
-    assert_eq!(child.borrow().type_, CJSON_STRING);
-    assert_eq!(child.borrow().valuestring, Some("Hello".to_string()));
+        // Check the first child
+        let mut child = array.borrow().child.clone().expect("Array should have a child");
+         assert_eq!(child.borrow().type_, CJSON_STRING);
+        assert_eq!(child.borrow().valuestring, Some("Hello".to_string()));
 
-    // Move to the next child
-    child = child.borrow().next.clone().expect("First child should have a next");
-    assert_eq!(child.borrow().type_, CJSON_STRING);
-    assert_eq!(child.borrow().valuestring, Some("world".to_string()));
+        // Move to the next child
+        child = child.borrow().next.clone().expect("First child should have a next");
+        assert_eq!(child.borrow().type_, CJSON_STRING);
+        assert_eq!(child.borrow().valuestring, Some("world".to_string()));
 
-    // Move to the next child
-    child = child.borrow().next.clone().expect("Second child should have a next");
-    assert_eq!(child.borrow().type_, CJSON_STRING);
-    assert_eq!(child.borrow().valuestring, Some("Rust".to_string()));
+        // Move to the next child
+        child = child.borrow().next.clone().expect("Second child should have a next");
+        assert_eq!(child.borrow().type_, CJSON_STRING);
+        assert_eq!(child.borrow().valuestring, Some("Rust".to_string()));
 
-    // Ensure that there are no more children
-    assert!(child.borrow().next.is_none(), "There should be no more children");
+        // Ensure that there are no more children
+        assert!(child.borrow().next.is_none(), "There should be no more children");
+    }
 }
