@@ -228,5 +228,32 @@ mod tests {
         assert_eq!(item.valueint, 0);
         assert_eq!(item.valuedouble, 0.0);
     }
+
+    #[test]
+    fn test_cjson_create_string_array() {
+        let strings = ["Hello", "world", "Rust"];
+        let array = cJSON_CreateStringArray(&strings).unwrap();
+
+        // Check that the type is cJSON_Array
+        assert_eq!(array.type_, cJSON_Array);
+
+        // Check the first child
+        let mut child = array.child.unwrap();
+        assert_eq!(child.type_, cJSON_String);
+        assert_eq!(child.valuestring, Some("Hello".to_string()));
+
+        // Move to the next child
+        child = child.next.unwrap();
+        assert_eq!(child.type_, cJSON_String);
+        assert_eq!(child.valuestring, Some("world".to_string()));
+
+        // Move to the next child
+        child = child.next.unwrap();
+        assert_eq!(child.type_, cJSON_String);
+        assert_eq!(child.valuestring, Some("Rust".to_string()));
+
+        // Ensure that there are no more children
+        assert!(child.next.is_none());
+    }
 }
 
