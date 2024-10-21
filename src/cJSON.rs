@@ -101,7 +101,7 @@ mod tests {
     assert_eq!(array.borrow().type_, CJSON_ARRAY);
 
     // Check the first child
-    let mut child = array.borrow().child.clone().expect("Array should have a child");
+    let child = array.borrow().child.clone().expect("Array should have a child");
     assert_eq!(child.borrow().type_, CJSON_STRING);
     assert_eq!(child.borrow().valuestring, Some("Hello".to_string()));
 
