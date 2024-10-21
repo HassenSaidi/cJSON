@@ -31,7 +31,7 @@ pub struct CJSON {
     pub next: Option<Box<CJSON>>,
     pub prev: Option<Box<CJSON>>, // Raw mutable pointer
     pub child: Option<Box<CJSON>>,
-    pub type_: i32,
+    pub type_: u32,
     pub valuestring: Option<String>,
     pub valueint: i32,
     pub valuedouble: f64,
@@ -61,4 +61,30 @@ pub fn cJSON_CreateNull() -> CJSON {
     item.type_ = cJSON_NULL;
     item
 }
+
+pub fn create_bool(value: bool) -> CJSON  {
+        let mut item = cJSON_New_Item();
+        item.type_ = if value { CJSON_TRUE } else { CJSON_FALSE };
+        item.valueint = if value { 1 } else { 0 };
+        item
+}
+
+pub fn create_number(num: f64) -> CJSON  {
+        let mut item = cJSON_New_Item();
+        item.type_ = CJSON_NUMBER;
+        item.valuedouble = num;
+        item.valueint = num as i32;
+        item
+}
+
+pub fn create_string(s: &str) -> CJSON  {
+        let mut item = cJSON_New_Item();
+        item.type_ = CJSON_STRING;
+        item.valuestring = Some(s.to_string());
+        item
+}
+
+//cJSON_CreateTrue
+//cJSON_CreateFalse
+
 
