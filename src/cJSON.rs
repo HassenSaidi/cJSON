@@ -163,3 +163,22 @@ fn build_linked_list(mut items: Vec<CJSON>) -> Option<Box<CJSON>> {
         Some(array)
     }
 
+
+/* Tests
+
+*/
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_cjson_create_null() {
+        let item = cJSON_CreateNull();
+        assert_eq!(item.type_, cJSON_NULL);
+        assert!(item.valuestring.is_none());
+        assert_eq!(item.valueint, 0);
+        assert_eq!(item.valuedouble, 0.0);
+    }
+}
+
