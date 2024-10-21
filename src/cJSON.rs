@@ -135,7 +135,7 @@ fn build_linked_list(mut items: Vec<CJSON>) -> Option<Box<CJSON>> {
 
     for item in items {
         let mut boxed_item = Box::new(item);
-        boxed_item.prev = Some(Box::new((*current).clone()));
+        boxed_item.prev = Some(Box::new(*(*current).clone()));
         current.next = Some(boxed_item);
         current = current.next.as_mut().unwrap();
     }
