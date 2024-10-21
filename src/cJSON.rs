@@ -164,6 +164,54 @@ fn build_linked_list(mut items: Vec<CJSON>) -> Option<Box<CJSON>> {
     }
 
 
+/// Creates a `CJSON` instance representing a JSON array of strings.
+pub fn cjson_create_string_array(strings: &[&str]) -> Option<CJSON> {
+    if strings.is_empty() {
+        return None;
+    }
+
+    let mut array = cjson_new();
+    array.type_ = cJSON_Array;
+
+    let mut prev_node: Option<Box<CJSON>> = None;
+    let mut first_child: Option<Box<CJSON>> = None;
+
+    for (i, &s) in strings.iter().enumerate() {
+        let string_cjson = cJSON_CreateString(s);
+
+        // If creation failed (unlikely in this case), clean up and return None
+        // In our implementation, cjson_create_string always succeeds, but we include this for completeness
+        // if string_cjson.valuestring.is_none() {
+        //     return None;
+        // }
+
+        let mut boxed_node = Box::new(string_cjson);
+
+        // Set the prev pointer
+        if let Some(ref mut prev) = prev_node {
+            prev.next = Some(boxed_node.clone());
+            boxed_node.prev = Some(prev.clone());
+        }
+
+        // Set the first child
+        if i == 0 {
+            first_child = Some(boxed_node.clone());
+        }
+
+        prev_node = Some(boxed_node);
+    }
+
+    // Set the array's child to the first node
+    array.child = first_child;
+
+    // Optionally set the prev pointer of the first child to the last node (as in the original C code)
+    if let (Some(ref mut child), Some(ref prev)) = (&mut array.child, &prev_node) {
+        child.prev = Some(prev.clone());
+    }
+
+    Some(array)
+}
+
 /* Tests
 
 */
