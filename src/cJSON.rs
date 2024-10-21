@@ -64,14 +64,14 @@ pub fn cJSON_CreateNull() -> CJSON {
 
 pub fn create_bool(value: bool) -> CJSON  {
         let mut item = cJSON_New_Item();
-        item.type_ = if value { CJSON_TRUE } else { CJSON_FALSE };
+        item.type_ = if value { cJSON_True } else { CJSON_FALSE };
         item.valueint = if value { 1 } else { 0 };
         item
 }
 
 pub fn create_number(num: f64) -> CJSON  {
         let mut item = cJSON_New_Item();
-        item.type_ = CJSON_NUMBER;
+        item.type_ = cJSON_Number;
         item.valuedouble = num;
         item.valueint = num as i32;
         item
@@ -79,12 +79,21 @@ pub fn create_number(num: f64) -> CJSON  {
 
 pub fn create_string(s: &str) -> CJSON  {
         let mut item = cJSON_New_Item();
-        item.type_ = CJSON_STRING;
+        item.type_ = cJSON_String;
         item.valuestring = Some(s.to_string());
         item
 }
 
-//cJSON_CreateTrue
-//cJSON_CreateFalse
+pub fn cJSON_CreateTrue()-> CJSON {
+    let mut item = cJSON_New_Item();
+    item.type_ = cJSON_True;
+    item
+}    
+
+pub fn cJSON_CreateFalse()-> CJSON {
+    let mut item = cJSON_New_Item();
+    item.type_ = cJSON_False;
+    item
+}
 
 
