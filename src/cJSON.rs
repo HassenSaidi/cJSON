@@ -143,7 +143,7 @@ fn build_linked_list(mut items: Vec<CJSON>) -> Option<Box<CJSON>> {
 }
 
 /// Creates a `CJSON` instance representing a JSON array of integers.
-    pub fn cJSON_CreateIntArray(numbers: &[i32]) -> Option(CJSON) {
+    pub fn cJSON_CreateIntArray(numbers: &[i32]) -> Option<CJSON> {
         if numbers.is_empty() {
             return None;
         }
