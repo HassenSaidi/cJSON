@@ -27,6 +27,7 @@ const cJSON_StringIsConst: u32 = 512;
 // CJSON structure
 // type is renamed to type_
 #[derive(Debug)]
+#[derive(Clone)]
 pub struct CJSON {
     pub next: Option<Box<CJSON>>,
     pub prev: Option<Box<CJSON>>, // Raw mutable pointer
