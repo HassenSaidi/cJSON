@@ -238,22 +238,22 @@ mod tests {
         assert_eq!(array.type_, cJSON_Array);
 
         // Check the first child
-        let mut child = array.child.unwrap();
+        let mut child = array.child.expect("Array should have a child");
         assert_eq!(child.type_, cJSON_String);
         assert_eq!(child.valuestring, Some("Hello".to_string()));
 
         // Move to the next child
-        child = child.next.unwrap();
+        child = child.next.expect("First child should have a next");
         assert_eq!(child.type_, cJSON_String);
         assert_eq!(child.valuestring, Some("world".to_string()));
 
         // Move to the next child
-        child = child.next.unwrap();
+        child = child.next.expect("Second child should have a next");
         assert_eq!(child.type_, cJSON_String);
         assert_eq!(child.valuestring, Some("Rust".to_string()));
 
         // Ensure that there are no more children
-        assert!(child.next.is_none());
+        assert!(child.next.is_none(), "There should be no more children");
     }
 }
 
