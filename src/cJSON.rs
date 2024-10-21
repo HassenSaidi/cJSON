@@ -170,7 +170,7 @@ pub fn cjson_create_string_array(strings: &[&str]) -> Option<CJSON> {
         return None;
     }
 
-    let mut array = cjson_new();
+    let mut array = cJSON_New_Item();
     array.type_ = cJSON_Array;
 
     let mut prev_node: Option<Box<CJSON>> = None;
