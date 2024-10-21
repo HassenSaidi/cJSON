@@ -62,14 +62,14 @@ pub fn cJSON_CreateNull() -> CJSON {
     item
 }
 
-pub fn create_bool(value: bool) -> CJSON  {
+pub fn cJSON_CreateBool(value: bool) -> CJSON  {
         let mut item = cJSON_New_Item();
-        item.type_ = if value { cJSON_True } else { CJSON_FALSE };
+        item.type_ = if value { cJSON_True } else { cJSON_False };
         item.valueint = if value { 1 } else { 0 };
         item
 }
 
-pub fn create_number(num: f64) -> CJSON  {
+pub fn cJSON_CreateNumber(num: f64) -> CJSON  {
         let mut item = cJSON_New_Item();
         item.type_ = cJSON_Number;
         item.valuedouble = num;
@@ -77,7 +77,7 @@ pub fn create_number(num: f64) -> CJSON  {
         item
 }
 
-pub fn create_string(s: &str) -> CJSON  {
+pub fn cJSON_CreateString(s: &str) -> CJSON  {
         let mut item = cJSON_New_Item();
         item.type_ = cJSON_String;
         item.valuestring = Some(s.to_string());
@@ -96,4 +96,26 @@ pub fn cJSON_CreateFalse()-> CJSON {
     item
 }
 
+pub fn cJSON_CreateArray()-> CJSON {
+    let mut item = cJSON_New_Item();
+    item.type_ = cJSON_Array;
+    item
+}
 
+pub fn cJSON_CreateObject()-> CJSON {
+    let mut item = cJSON_New_Item();
+    item.type_ = cJSON_Object;
+    item
+}
+
+pub fn cJSON_CreateRa(raw: &str) -> Option<Self> {
+    let mut item = cJSON_New_Item();
+    item.type_ = cJSON_Raw;
+    item.valuestring = if raw.is_empty() {
+        None    
+        } else {
+            item.valuestring = Some(raw.to_string());
+            Some(item)
+        };
+    item
+}
