@@ -101,17 +101,17 @@ mod tests {
     assert_eq!(array.borrow().type_, CJSON_ARRAY);
 
     // Check the first child
-    let child = array.borrow().child.clone().expect("Array should have a child");
+    let child = array.child.clone().expect("Array should have a child");
     assert_eq!(child.borrow().type_, CJSON_STRING);
     assert_eq!(child.borrow().valuestring, Some("Hello".to_string()));
 
     // Move to the next child
-    child = child.borrow().next.clone().expect("First child should have a next");
+    child = child.next.clone().expect("First child should have a next");
     assert_eq!(child.borrow().type_, CJSON_STRING);
     assert_eq!(child.borrow().valuestring, Some("world".to_string()));
 
     // Move to the next child
-    child = child.borrow().next.clone().expect("Second child should have a next");
+    child = child.next.clone().expect("Second child should have a next");
     assert_eq!(child.borrow().type_, CJSON_STRING);
     assert_eq!(child.borrow().valuestring, Some("Rust".to_string()));
 
