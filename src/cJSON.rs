@@ -53,9 +53,12 @@ pub fn cJSON_CreateBool(value: bool) -> Rc<RefCell<CJSON>>  {
 
 pub fn cJSON_CreateNumber(num: f64) -> Rc<RefCell<CJSON>>  {
         let item = cJSON_New_Item();
-        item.type_ = cJSON_Number;
-        item.valuedouble = num;
-        item.valueint = num as i32;
+         {
+        let mut item_mut = item.borrow_mut();
+        item_mut.type_ = cJSON_Number;
+        item_mut.valuedouble = num;
+        item_mut.valueint = num as i32;
+         }
         item
 }
 pub fn cJSON_CreateString(s: &str) -> Rc<RefCell<CJSON>>  {
