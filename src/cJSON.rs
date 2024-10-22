@@ -99,12 +99,13 @@ mod tests {
 
     // Check that the type is CJSON_ARRAY
     assert_eq!(array.borrow().type_, CJSON_ARRAY);
-    /*
+    
     // Check the first child
     let mut childv = array.borrow_mut().child.clone().expect("Array should have a child");
     assert_eq!(childv.borrow().type_, CJSON_STRING);
     assert_eq!(childv.borrow().valuestring, Some("Hello".to_string()));
-
+    
+    /*
     // Move to the next child
     childv = childv.borrow_mut().next.clone().expect("First child should have a next");
     assert_eq!(childv.borrow().type_, CJSON_STRING);
