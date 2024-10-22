@@ -3,7 +3,7 @@ This file contains the main cJSON file.
 This file is the translation of the original cJSON C implementation in Rust.
 */
 
-use std::io::Write;
+use std::io::set_writer;
 
 // Project version
 const CJSON_VERSION_MAJOR: u32 = 1;
@@ -291,7 +291,7 @@ mod tests {
             let mut writer = std::io::BufWriter::new(&mut output);
             let stdio = std::io::stdout();
             let stdio_lock = stdio.lock();
-            let _guard = stdio_lock.write(writer);
+            let _guard = stdio_lock.set_writer(writer);
 
             print_cjson_struct();
         }
