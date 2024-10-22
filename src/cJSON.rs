@@ -3,7 +3,6 @@ This file contains the main cJSON file.
 This file is the translation of the original cJSON C implementation in Rust.
 */
 
-use std::io::set_writer;
 
 // Project version
 const CJSON_VERSION_MAJOR: u32 = 1;
