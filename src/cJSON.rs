@@ -46,7 +46,7 @@ pub fn cJSON_CreateNull() -> Rc<RefCell<CJSON>> {
 
 pub fn cJSON_CreateBool(value: bool) -> Rc<RefCell<CJSON>>  {
         let item = cJSON_New_Item();
-        item.type_ = if value { cJSON_True } else { cJSON_False };
+        item.type_ = if value { CJSON_TRUE } else { CJSON_FALSE };
         item.valueint = if value { 1 } else { 0 };
         item
 }
@@ -55,7 +55,7 @@ pub fn cJSON_CreateNumber(num: f64) -> Rc<RefCell<CJSON>>  {
         let item = cJSON_New_Item();
          {
         let mut item_mut = item.borrow_mut();
-        item_mut.type_ = cJSON_Number;
+        item_mut.type_ = CJSON_NUMBER;
         item_mut.valuedouble = num;
         item_mut.valueint = num as i32;
          }
@@ -75,7 +75,7 @@ pub fn cJSON_CreateTrue()-> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
     {
     let mut item_mut = item.borrow_mut();
-    item_mut.type_ = cJSON_True;
+    item_mut.type_ = CJSON_TRUE;
     }
     item
 }    
@@ -84,7 +84,7 @@ pub fn cJSON_CreateFalse()-> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
     {
     let mut item_mut = item.borrow_mut();
-    item_mut.type_ = cJSON_False;
+    item_mut.type_ = CJSON_FALSE;
     }
     item
 }
@@ -93,7 +93,7 @@ pub fn cJSON_CreateArray()-> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
     {
     let mut item_mut = item.borrow_mut();
-    item_mut.type_ = cJSON_Array;
+    item_mut.type_ = CJSON_ARRAY;
     }
     item
 }
@@ -101,7 +101,7 @@ pub fn cJSON_CreateObject()-> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
     {
     let mut item_mut = item.borrow_mut();
-    item_mut.type_ = cJSON_Object;
+    item_mut.type_ = CJSON_OBJECT;
     }
     item
 }
@@ -110,7 +110,7 @@ pub fn cJSON_CreateRaw(raw: &str) -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
     {
         let mut item_mut = item.borrow_mut();
-        item_mut.type_ = cJSON_Raw;
+        item_mut.type_ = CJSON_RAW;
         item_mut.valuestring = if raw.is_empty() {
             None    
             } else {
