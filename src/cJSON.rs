@@ -36,6 +36,89 @@ pub fn cJSON_New_Item() -> Rc<RefCell<CJSON>> {
     }))
 }
 
+/* Create basic types: */
+
+pub fn cJSON_CreateNull() -> Rc<RefCell<CJSON>> {
+    let item = cJSON_New_Item();
+    item.type_ = cJSON_NULL;
+    item
+}
+
+pub fn cJSON_CreateBool(value: bool) -> Rc<RefCell<CJSON>>  {
+        let item = cJSON_New_Item();
+        item.type_ = if value { cJSON_True } else { cJSON_False };
+        item.valueint = if value { 1 } else { 0 };
+        item
+}
+
+pub fn cJSON_CreateNumber(num: f64) -> Rc<RefCell<CJSON>>  {
+        let item = cJSON_New_Item();
+        item.type_ = cJSON_Number;
+        item.valuedouble = num;
+        item.valueint = num as i32;
+        item
+}
+pub fn cJSON_CreateString(s: &str) -> Rc<RefCell<CJSON>>  {
+        let item = cJSON_New_Item();
+         {
+        let mut item_mut = item.borrow_mut();
+        item_mut.type_ = CJSON_STRING;
+        item_mut.valuestring = Some(s.to_string());
+        }    
+        item
+}
+
+pub fn cJSON_CreateTrue()-> Rc<RefCell<CJSON>> {
+    let item = cJSON_New_Item();
+    {
+    let mut item_mut = item.borrow_mut();
+    item_mut.type_ = cJSON_True;
+    }
+    item
+}    
+
+pub fn cJSON_CreateFalse()-> Rc<RefCell<CJSON>> {
+    let item = cJSON_New_Item();
+    {
+    let mut item_mut = item.borrow_mut();
+    item_mut.type_ = cJSON_False;
+    }
+    item
+}
+
+pub fn cJSON_CreateArray()-> Rc<RefCell<CJSON>> {
+    let item = cJSON_New_Item();
+    {
+    let mut item_mut = item.borrow_mut();
+    item_mut.type_ = cJSON_Array;
+    }
+    item
+}
+pub fn cJSON_CreateObject()-> Rc<RefCell<CJSON>> {
+    let item = cJSON_New_Item();
+    {
+    let mut item_mut = item.borrow_mut();
+    item_mut.type_ = cJSON_Object;
+    }
+    item
+}
+
+pub fn cJSON_CreateRaw(raw: &str) -> Rc<RefCell<CJSON>> {
+    let item = cJSON_New_Item();
+    {
+        let mut item_mut = item.borrow_mut();
+        item_mut.type_ = cJSON_Raw;
+        item_mut.valuestring = if raw.is_empty() {
+            None    
+            } else {
+                Some(raw.to_string())
+            };
+    }
+    item
+}
+
+/* Create Arrays: */
+
 /// Creates a `CJSON` instance representing a JSON string.
 pub fn cjson_create_string(s: &str) -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
@@ -60,7 +143,7 @@ pub fn cJSON_CreateStringArray(strings: &[&str]) -> Option<Rc<RefCell<CJSON>>> {
     let mut first_child: Option<Rc<RefCell<CJSON>>> = None;
 
     for (i, &s) in strings.iter().enumerate() {
-        let string_cjson = cjson_create_string(s);
+        let string_cjson = cJSON_CreateString(s);
 
         // Set the prev and next pointers
         if let Some(ref prev) = prev_node {
