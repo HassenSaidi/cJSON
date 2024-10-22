@@ -220,6 +220,8 @@ pub fn cJSON_CreateStringArray(strings: &[&str]) -> Option<CJSON> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::Cursor;
+    use std::io::Write;
 
     #[test]
     fn test_cjson_create_null() {
@@ -258,45 +260,45 @@ mod tests {
         */
     }
 
+    fn print_cjson(item: &CJSON) {
+        match item.type_ {
+            cJSON_String => println!("String: {}", item.valuestring.as_deref().unwrap_or("")),
+            cJSON_Array => {
+                println!("Array:");
+                let mut child = &item.child;
+                while let Some(c) = child {
+                    print_cjson(c);
+                    child = &c.next;
+                }
+            }
+            _ => println!("Unsupported type"),
+        }
+    }
+
+    fn print_cjson_struct() {
+        let strings = ["Hello", "world", "Rust"];
+        if let Some(array) = cJSON_CreateStringArray(&strings) {
+            print_cjson(&array);
+        } else {
+            println!("Failed to create cJSON string array");
+        }
+    }
+    
     #[test]
     fn test_print_cjson_struct() {
-        fn print_cjson(item: &CJSON) {
-            match item.type_ {
-                cJSON_String => println!("String: {}", item.valuestring.as_deref().unwrap_or("")),
-                cJSON_Array => {
-                    println!("Array:");
-                    let mut child = &item.child;
-                    while let Some(c) = child {
-                        print_cjson(c);
-                        child = &c.next;
-                    }
-                }
-                _ => println!("Unsupported type"),
-            }
-        }
-
-        fn print_cjson_struct() {
-            let strings = ["Hello", "world", "Rust"];
-            if let Some(array) = cJSON_CreateStringArray(&strings) {
-                print_cjson(&array);
-            } else {
-                println!("Failed to create cJSON string array");
-            }
-        }
-
         // Redirect stdout to capture the print output
-        let mut output = Vec::new();
+        let mut output = Cursor::new(Vec::new());
         {
-            let mut writer = std::io::BufWriter::new(&mut output);
-            let stdio = std::io::stdout();
-            let stdio_lock = stdio.lock();
-            let _guard = stdio_lock.set_writer(writer);
-
+            let stdout = std::io::stdout();
+            let mut handle = stdout.lock();
+            std::io::set_output_capture(Some(Box::new(&mut output)));
             print_cjson_struct();
+            std::io::set_output_capture(None);
         }
 
-        let printed = String::from_utf8(output).unwrap();
+        let printed = String::from_utf8(output.into_inner()).unwrap();
         let expected = "Array:\nString: Hello\nString: world\nString: Rust\n";
         assert_eq!(printed, expected);
     }
+    
 }
