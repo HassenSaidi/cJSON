@@ -40,20 +40,20 @@ pub fn cJSON_New_Item() -> Rc<RefCell<CJSON>> {
 
 pub fn cJSON_CreateNull() -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
-    let mut item_mut = item.borrow_mut();
     {
+        let mut item_mut = item.borrow_mut();
         item_mut.type_ = CJSON_NULL;
     }
     item
 }
 
 pub fn cJSON_CreateBool(value: bool) -> Rc<RefCell<CJSON>>  {
-        let item = cJSON_New_Item();
-        let mut item_mut = item.borrow_mut();
-    {
-        item_mut.type_ = if value { CJSON_TRUE } else { CJSON_FALSE };
-        item_mut.valueint = if value { 1 } else { 0 };
-    }
+        let item = cJSON_New_Item(); 
+        {
+            let mut item_mut = item.borrow_mut();
+            item_mut.type_ = if value { CJSON_TRUE } else { CJSON_FALSE };
+            item_mut.valueint = if value { 1 } else { 0 };
+        }
         item
 }
 
