@@ -40,7 +40,8 @@ pub fn cJSON_New_Item() -> Rc<RefCell<CJSON>> {
 
 pub fn cJSON_CreateNull() -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
-    item.type_ = CJSON_NULL;
+    let mut item_mut = item.borrow_mut();
+    item_mut.type_ = CJSON_NULL;
     item
 }
 
