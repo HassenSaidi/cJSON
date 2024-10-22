@@ -48,7 +48,7 @@ pub fn cjson_create_string(s: &str) -> Rc<RefCell<CJSON>> {
 }
 
 /// Creates a `CJSON` instance representing a JSON array of strings.
-pub fn cJSON_CreateStringArray((strings: &[&str]) -> Option<Rc<RefCell<CJSON>>> {
+pub fn cJSON_CreateStringArray(strings: &[&str]) -> Option<Rc<RefCell<CJSON>>> {
     if strings.is_empty() {
         return None;
     }
@@ -93,9 +93,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_cJSON_CreateStringArray(() {
+    fn test_cJSON_CreateStringArray() {
     let strings = ["Hello", "world", "Rust"];
-    let array = cJSON_CreateStringArray((&strings).unwrap();
+    let array = cJSON_CreateStringArray(&strings).unwrap();
 
     // Check that the type is CJSON_ARRAY
     assert_eq!(array.borrow().type_, CJSON_ARRAY);
