@@ -23,7 +23,7 @@ pub struct CJSON {
 }
 
 /// Initializes a new `CJSON` instance with default values.
-pub fn cjson_new() -> Rc<RefCell<CJSON>> {
+pub fn cJSON_New_Item() -> Rc<RefCell<CJSON>> {
     Rc::new(RefCell::new(CJSON {
         next: None,
         prev: None,
@@ -38,7 +38,7 @@ pub fn cjson_new() -> Rc<RefCell<CJSON>> {
 
 /// Creates a `CJSON` instance representing a JSON string.
 pub fn cjson_create_string(s: &str) -> Rc<RefCell<CJSON>> {
-    let item = cjson_new();
+    let item = cJSON_New_Item();
     {
         let mut item_mut = item.borrow_mut();
         item_mut.type_ = CJSON_STRING;
@@ -48,12 +48,12 @@ pub fn cjson_create_string(s: &str) -> Rc<RefCell<CJSON>> {
 }
 
 /// Creates a `CJSON` instance representing a JSON array of strings.
-pub fn cjson_create_string_array(strings: &[&str]) -> Option<Rc<RefCell<CJSON>>> {
+pub fn cJSON_CreateStringArray((strings: &[&str]) -> Option<Rc<RefCell<CJSON>>> {
     if strings.is_empty() {
         return None;
     }
 
-    let array = cjson_new();
+    let array = cJSON_New_Item();
     array.borrow_mut().type_ = CJSON_ARRAY;
 
     let mut prev_node: Option<Rc<RefCell<CJSON>>> = None;
@@ -93,9 +93,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_cjson_create_string_array() {
+    fn test_cJSON_CreateStringArray(() {
     let strings = ["Hello", "world", "Rust"];
-    let array = cjson_create_string_array(&strings).unwrap();
+    let array = cJSON_CreateStringArray((&strings).unwrap();
 
     // Check that the type is CJSON_ARRAY
     assert_eq!(array.borrow().type_, CJSON_ARRAY);
