@@ -220,8 +220,9 @@ pub fn cJSON_CreateStringArray(strings: &[&str]) -> Option<CJSON> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::Cursor;
-    use std::io::Write;
+    use std::io::{self, Write};
+    use std::sync::{Arc, Mutex};
+    use std::thread;
 
     #[test]
     fn test_cjson_create_null() {
@@ -260,6 +261,8 @@ mod tests {
         */
     }
 
+    
+
     fn print_cjson(item: &CJSON) {
         match item.type_ {
             cJSON_String => println!("String: {}", item.valuestring.as_deref().unwrap_or("")),
@@ -286,19 +289,26 @@ mod tests {
     
     #[test]
     fn test_print_cjson_struct() {
-        // Redirect stdout to capture the print output
-        let mut output = Cursor::new(Vec::new());
-        {
-            let stdout = std::io::stdout();
-            let mut handle = stdout.lock();
-            std::io::set_output_capture(Some(Box::new(&mut output)));
-            print_cjson_struct();
-            std::io::set_output_capture(None);
-        }
+        let output = Arc::new(Mutex::new(Vec::new()));
 
-        let printed = String::from_utf8(output.into_inner()).unwrap();
+        let output_clone = Arc::clone(&output);
+        let handle = thread::spawn(move || {
+            let mut cursor = io::Cursor::new(output_clone.lock().unwrap());
+            let stdout = io::stdout();
+            let mut handle = stdout.lock();
+            let _ = handle.write_all(b"");
+            io::set_output_capture(Some(Box::new(cursor)));
+            print_cjson_struct();
+            io::set_output_capture(None);
+        });
+
+        handle.join().unwrap();
+
+        let output = output.lock().unwrap();
+        let printed = String::from_utf8(output.clone()).unwrap();
         let expected = "Array:\nString: Hello\nString: world\nString: Rust\n";
         assert_eq!(printed, expected);
     }
+    
     
 }
