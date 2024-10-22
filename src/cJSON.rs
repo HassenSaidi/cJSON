@@ -290,7 +290,7 @@ mod tests {
             let mut writer = std::io::BufWriter::new(&mut output);
             let stdio = std::io::stdout();
             let stdio_lock = stdio.lock();
-            let _guard = stdio_lock.set_writer(writer);
+            let _guard = stdio_lock.write(writer);
 
             print_cjson_struct();
         }
