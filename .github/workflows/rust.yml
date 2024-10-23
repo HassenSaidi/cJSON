@@ -2,9 +2,9 @@ name: Rust
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "custom_gpt" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "custom_gpt" ]
 
 env:
   CARGO_TERM_COLOR: always
