@@ -41,25 +41,25 @@ pub fn cJSON_New_Item() -> Rc<RefCell<CJSON>> {
 
 pub fn cjson_create_null() -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
-    item.borrow_mut().item_type = CJSON_NULL;
+    item.borrow_mut().type_ = CJSON_NULL;
     item
 }
 
 pub fn cjson_create_true() -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
-    item.borrow_mut().item_type = CJSON_TRUE;
+    item.borrow_mut().type_ = CJSON_TRUE;
     item
 }
 
 pub fn cjson_create_false() -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
-    item.borrow_mut().item_type = CJSON_FALSE;
+    item.borrow_mut().type_ = CJSON_FALSE;
     item
 }
 
 pub fn cjson_create_bool(boolean: bool) -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
-    item.borrow_mut().item_type = if boolean { CJSON_TRUE } else { CJSON_FALSE };
+    item.borrow_mut().type_ = if boolean { CJSON_TRUE } else { CJSON_FALSE };
     item
 }
 
@@ -67,7 +67,7 @@ pub fn cjson_create_number(num: f64) -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
     {
         let mut item_mut = item.borrow_mut();
-        item_mut.item_type = CJSON_NUMBER;
+        item_mut.type_ = CJSON_NUMBER;
         item_mut.valuedouble = num;
         item_mut.valueint = num as i32; // cast to integer for backward compatibility
     }
@@ -78,7 +78,7 @@ pub fn cjson_create_string_reference(string: &str) -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
     {
         let mut item_mut = item.borrow_mut();
-        item_mut.item_type = CJSON_STRING | CJSON_IS_REFERENCE;
+        item_mut.type_ = CJSON_STRING | CJSON_IS_REFERENCE;
         item_mut.valuestring = Some(string.to_string()); // Store reference flag without ownership
     }
     item
@@ -88,7 +88,7 @@ pub fn cjson_create_object_reference(child: Rc<RefCell<CJSON>>) -> Rc<RefCell<CJ
     let item = cJSON_New_Item();
     {
         let mut item_mut = item.borrow_mut();
-        item_mut.item_type = CJSON_OBJECT | CJSON_IS_REFERENCE;
+        item_mut.type_ = CJSON_OBJECT | CJSON_IS_REFERENCE;
         item_mut.child = Some(child); // Reference to existing object
     }
     item
@@ -98,7 +98,7 @@ pub fn cjson_create_array_reference(child: Rc<RefCell<CJSON>>) -> Rc<RefCell<CJS
     let item = cJSON_New_Item();
     {
         let mut item_mut = item.borrow_mut();
-        item_mut.item_type = CJSON_ARRAY | CJSON_IS_REFERENCE;
+        item_mut.type_ = CJSON_ARRAY | CJSON_IS_REFERENCE;
         item_mut.child = Some(child); // Reference to existing array
     }
     item
@@ -108,7 +108,7 @@ pub fn cjson_create_raw(raw: &str) -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
     {
         let mut item_mut = item.borrow_mut();
-        item_mut.item_type = CJSON_RAW;
+        item_mut.type_ = CJSON_RAW;
         item_mut.valuestring = Some(raw.to_string()); // Store raw JSON string
     }
     item
@@ -116,13 +116,13 @@ pub fn cjson_create_raw(raw: &str) -> Rc<RefCell<CJSON>> {
 
 pub fn cjson_create_array() -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
-    item.borrow_mut().item_type = CJSON_ARRAY;
+    item.borrow_mut().type_ = CJSON_ARRAY;
     item
 }
 
 pub fn cjson_create_object() -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
-    item.borrow_mut().item_type = CJSON_OBJECT;
+    item.borrow_mut().type_ = CJSON_OBJECT;
     item
 }
 
