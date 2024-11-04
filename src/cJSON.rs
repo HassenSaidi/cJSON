@@ -1,14 +1,14 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 
-pub const CJSON_NULL: i32 = 0;
-pub const CJSON_FALSE: i32 = 1;
-pub const CJSON_TRUE: i32 = 2;
-pub const CJSON_NUMBER: i32 = 3;
-pub const CJSON_STRING: i32 = 4;
-pub const CJSON_ARRAY: i32 = 5;
-pub const CJSON_OBJECT: i32 = 6;
-pub const CJSON_RAW: i32 = 7;
+pub const CJSON_NULL: u32 = 0;
+pub const CJSON_FALSE: u32 = 1;
+pub const CJSON_TRUE: u32 = 2;
+pub const CJSON_NUMBER: u32 = 3;
+pub const CJSON_STRING: u32 = 4;
+pub const CJSON_ARRAY: u32 = 5;
+pub const CJSON_OBJECT: u32 = 6;
+pub const CJSON_RAW: u32 = 7;
 
 const CJSON_IS_REFERENCE: u32 = 256;
 const CJSON_STRING_IS_CONST: u32 = 512;
@@ -18,7 +18,7 @@ pub struct CJSON {
     pub next: Option<Rc<RefCell<CJSON>>>,
     pub prev: Option<Rc<RefCell<CJSON>>>,
     pub child: Option<Rc<RefCell<CJSON>>>,
-    pub type_: i32,
+    pub type_: u32,
     pub valuestring: Option<String>,
     pub valueint: i32,
     pub valuedouble: f64,
