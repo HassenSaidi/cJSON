@@ -36,6 +36,94 @@ pub fn cJSON_New_Item() -> Rc<RefCell<CJSON>> {
     }))
 }
 
+pub fn cjson_create_null() -> Rc<RefCell<CJSON>> {
+    let item = cjson_new_item();
+    item.borrow_mut().item_type = CJSON_NULL;
+    item
+}
+
+pub fn cjson_create_true() -> Rc<RefCell<CJSON>> {
+    let item = cjson_new_item();
+    item.borrow_mut().item_type = CJSON_TRUE;
+    item
+}
+
+pub fn cjson_create_false() -> Rc<RefCell<CJSON>> {
+    let item = cjson_new_item();
+    item.borrow_mut().item_type = CJSON_FALSE;
+    item
+}
+
+pub fn cjson_create_bool(boolean: bool) -> Rc<RefCell<CJSON>> {
+    let item = cjson_new_item();
+    item.borrow_mut().item_type = if boolean { CJSON_TRUE } else { CJSON_FALSE };
+    item
+}
+
+pub fn cjson_create_number(num: f64) -> Rc<RefCell<CJSON>> {
+    let item = cjson_new_item();
+    {
+        let mut item_mut = item.borrow_mut();
+        item_mut.item_type = CJSON_NUMBER;
+        item_mut.valuedouble = num;
+        item_mut.valueint = num as i32; // cast to integer for backward compatibility
+    }
+    item
+}
+
+pub fn cjson_create_string_reference(string: &str) -> Rc<RefCell<CJSON>> {
+    let item = cjson_new_item();
+    {
+        let mut item_mut = item.borrow_mut();
+        item_mut.item_type = CJSON_STRING | CJSON_IS_REFERENCE;
+        item_mut.valuestring = Some(string.to_string()); // Store reference flag without ownership
+    }
+    item
+}
+
+pub fn cjson_create_object_reference(child: Rc<RefCell<CJSON>>) -> Rc<RefCell<CJSON>> {
+    let item = cjson_new_item();
+    {
+        let mut item_mut = item.borrow_mut();
+        item_mut.item_type = CJSON_OBJECT | CJSON_IS_REFERENCE;
+        item_mut.child = Some(child); // Reference to existing object
+    }
+    item
+}
+
+pub fn cjson_create_array_reference(child: Rc<RefCell<CJSON>>) -> Rc<RefCell<CJSON>> {
+    let item = cjson_new_item();
+    {
+        let mut item_mut = item.borrow_mut();
+        item_mut.item_type = CJSON_ARRAY | CJSON_IS_REFERENCE;
+        item_mut.child = Some(child); // Reference to existing array
+    }
+    item
+}
+
+pub fn cjson_create_raw(raw: &str) -> Rc<RefCell<CJSON>> {
+    let item = cjson_new_item();
+    {
+        let mut item_mut = item.borrow_mut();
+        item_mut.item_type = CJSON_RAW;
+        item_mut.valuestring = Some(raw.to_string()); // Store raw JSON string
+    }
+    item
+}
+
+pub fn cjson_create_array() -> Rc<RefCell<CJSON>> {
+    let item = cjson_new_item();
+    item.borrow_mut().item_type = CJSON_ARRAY;
+    item
+}
+
+pub fn cjson_create_object() -> Rc<RefCell<CJSON>> {
+    let item = cjson_new_item();
+    item.borrow_mut().item_type = CJSON_OBJECT;
+    item
+}
+
+
 /// Creates a `CJSON` instance representing a JSON string.
 pub fn cjson_create_string(s: &str) -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
