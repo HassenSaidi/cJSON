@@ -296,6 +296,17 @@ pub fn cjson_create_string_array(strings: &[&str]) -> Option<Rc<RefCell<CJSON>>>
     Some(array)
 }
 
+pub fn cjson_get_array_size(array: &Rc<RefCell<CJSON>>) -> usize {
+    let mut size = 0;
+    let mut child = array.borrow().child.clone();
+
+    while let Some(current) = child {
+        size += 1;
+        child = current.borrow().next.clone();
+    }
+
+    size
+}
 
 #[cfg(test)]
 mod tests {
