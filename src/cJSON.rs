@@ -178,6 +178,95 @@ pub fn cJSON_CreateStringArray(strings: &[&str]) -> Option<Rc<RefCell<CJSON>>> {
     Some(array)
 }
 
+
+pub fn cjson_create_int_array(numbers: &[i32]) -> Option<Rc<RefCell<CJSON>>> {
+    if numbers.is_empty() {
+        return None;
+    }
+
+    let array = cjson_create_array();
+    let mut prev:Option<Rc<RefCell<CJSON>>>  = None;
+
+    for &num in numbers {
+        let number_item = cjson_create_number(num as f64);
+        if prev.is_none() {
+            // Set the first item as the child of the array
+            array.borrow_mut().child = Some(Rc::clone(&number_item));
+        } else {
+            // Append to the previous item
+            prev.as_ref().unwrap().borrow_mut().next = Some(Rc::clone(&number_item));
+            number_item.borrow_mut().prev = Some(Rc::clone(prev.as_ref().unwrap()));
+        }
+        prev = Some(number_item);
+    }
+
+    // Link last and first elements if necessary
+    if let Some(first_child) = &array.borrow().child {
+        first_child.borrow_mut().prev = prev;
+    }
+
+    Some(array)
+}
+
+pub fn cjson_create_float_array(numbers: &[f32]) -> Option<Rc<RefCell<CJSON>>> {
+    if numbers.is_empty() {
+        return None;
+    }
+
+    let array = cjson_create_array();
+    let mut prev:Option<Rc<RefCell<CJSON>>>  = None;
+
+    for &num in numbers {
+        let number_item = cjson_create_number(num as f64); // Convert f32 to f64 for storage
+        if prev.is_none() {
+            // Set the first item as the child of the array
+            array.borrow_mut().child = Some(Rc::clone(&number_item));
+        } else {
+            // Append to the previous item
+            prev.as_ref().unwrap().borrow_mut().next = Some(Rc::clone(&number_item));
+            number_item.borrow_mut().prev = Some(Rc::clone(prev.as_ref().unwrap()));
+        }
+        prev = Some(number_item);
+    }
+
+    // Link last and first elements if necessary
+    if let Some(first_child) = &array.borrow().child {
+        first_child.borrow_mut().prev = prev;
+    }
+
+    Some(array)
+}
+
+
+pub fn cjson_create_double_array(numbers: &[f64]) -> Option<Rc<RefCell<CJSON>>> {
+    if numbers.is_empty() {
+        return None;
+    }
+
+    let array = cjson_create_array();
+    let mut prev: Option<Rc<RefCell<CJSON>>> = None;
+
+    for &num in numbers {
+        let number_item = cjson_create_number(num);
+        if prev.is_none() {
+            // Set the first item as the child of the array
+            array.borrow_mut().child = Some(Rc::clone(&number_item));
+        } else {
+            // Append to the previous item
+            prev.as_ref().unwrap().borrow_mut().next = Some(Rc::clone(&number_item));
+            number_item.borrow_mut().prev = Some(Rc::clone(prev.as_ref().unwrap()));
+        }
+        prev = Some(number_item);
+    }
+
+    // Link last and first elements if necessary
+    if let Some(first_child) = &array.borrow().child {
+        first_child.borrow_mut().prev = prev;
+    }
+
+    Some(array)
+}
+
 pub fn cjson_create_string_array(strings: &[&str]) -> Option<Rc<RefCell<CJSON>>> {
     if strings.is_empty() {
         return None;
