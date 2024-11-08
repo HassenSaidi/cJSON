@@ -339,4 +339,17 @@ mod tests {
     assert!(childv.borrow().next.is_none(), "There should be no more children");
 
     }
+
+    #[test]
+    fn test_create_string_array_and_get_size() {
+        let strings = ["Hello", "world", "Rust"];
+        let array = cjson_create_string_array(&strings).unwrap();
+
+        // Check that the type is CJSON_ARRAY
+        assert_eq!(array.borrow().type_, CJSON_ARRAY);
+
+        // Check the size of the array
+        let size = cjson_get_array_size(&array);
+        assert_eq!(size, strings.len() as i32);
+    }
 }
