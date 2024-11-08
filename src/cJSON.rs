@@ -178,6 +178,35 @@ pub fn cJSON_CreateStringArray(strings: &[&str]) -> Option<Rc<RefCell<CJSON>>> {
     Some(array)
 }
 
+pub fn cjson_create_string_array(strings: &[&str]) -> Option<Rc<RefCell<CJSON>>> {
+    if strings.is_empty() {
+        return None;
+    }
+
+    let array = cjson_create_array();
+    let mut prev = None;
+
+    for &string in strings {
+        let string_item = cjson_create_string(string);
+        if prev.is_none() {
+            // Set the first item as the child of the array
+            array.borrow_mut().child = Some(Rc::clone(&string_item));
+        } else {
+            // Append to the previous item
+            prev.as_ref().unwrap().borrow_mut().next = Some(Rc::clone(&string_item));
+            string_item.borrow_mut().prev = Some(Rc::clone(prev.as_ref().unwrap()));
+        }
+        prev = Some(string_item);
+    }
+
+    // Link last and first elements if necessary
+    if let Some(first_child) = &array.borrow().child {
+        first_child.borrow_mut().prev = prev;
+    }
+
+    Some(array)
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -186,7 +215,7 @@ mod tests {
     #[test]
     fn test_cJSON_CreateStringArray() {
     let strings = ["Hello", "world", "Rust"];
-    let array = cJSON_CreateStringArray(&strings).unwrap();
+    let array = cjson_create_string_array(&strings).unwrap();
 
     // Check that the type is CJSON_ARRAY
     assert_eq!(array.borrow().type_, CJSON_ARRAY);
