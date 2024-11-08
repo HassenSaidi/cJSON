@@ -308,6 +308,30 @@ pub fn cjson_get_array_size(array: &Rc<RefCell<CJSON>>) -> usize {
     size
 }
 
+fn get_array_item(array: &Rc<RefCell<CJSON>>, index: usize) -> Option<Rc<RefCell<CJSON>>> {
+    let mut current_child = array.borrow().child.clone();
+    let mut current_index = index;
+
+    while let Some(child) = current_child {
+        if current_index == 0 {
+            return Some(child);
+        }
+        current_index -= 1;
+        current_child = child.borrow().next.clone();
+    }
+
+    None
+}
+
+pub fn cjson_get_array_item(array: &Rc<RefCell<CJSON>>, index: i32) -> Option<Rc<RefCell<CJSON>>> {
+    if index < 0 {
+        return None;
+    }
+
+    get_array_item(array, index as usize)
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
