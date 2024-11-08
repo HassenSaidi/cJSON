@@ -371,19 +371,19 @@ pub fn cjson_delete(item: Option<Rc<RefCell<CJSON>>>) {
         let next = node_mut.next.clone();
 
         // Recursively delete child if it's not a reference
-        if (node_mut.item_type & CJSON_IS_REFERENCE) == 0 {
+        if (node_mut.type_ & CJSON_IS_REFERENCE) == 0 {
             if let Some(child) = node_mut.child.take() {
                 cjson_delete(Some(child));
             }
         }
 
         // Clear the valuestring if it's not a reference
-        if (node_mut.item_type & CJSON_IS_REFERENCE) == 0 {
+        if (node_mut.type_ & CJSON_IS_REFERENCE) == 0 {
             node_mut.valuestring = None;
         }
 
         // Clear the string if it's not marked as const
-        if (node_mut.item_type & CJSON_STRING_IS_CONST) == 0 {
+        if (node_mut.type_ & CJSON_STRING_IS_CONST) == 0 {
             node_mut.string = None;
         }
 
