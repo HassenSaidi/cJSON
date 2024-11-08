@@ -331,6 +331,37 @@ pub fn cjson_get_array_item(array: &Rc<RefCell<CJSON>>, index: i32) -> Option<Rc
     get_array_item(array, index as usize)
 }
 
+fn add_item_to_array(array: &Rc<RefCell<CJSON>>, item: Rc<RefCell<CJSON>>) -> bool {
+    if Rc::ptr_eq(&array, &item) || array.borrow().item_type != CJSON_ARRAY {
+        return false;
+    }
+
+    let mut array_mut = array.borrow_mut();
+    let child = array_mut.child.clone();
+
+    if child.is_none() {
+        // List is empty, start a new one
+        array_mut.child = Some(Rc::clone(&item));
+        item.borrow_mut().prev = Some(Rc::clone(&item));
+        item.borrow_mut().next = None;
+    } else {
+        // Append to the end of the list
+        let last = child.as_ref().unwrap().borrow().prev.clone();
+        if let Some(last_item) = last {
+            last_item.borrow_mut().next = Some(Rc::clone(&item));
+            item.borrow_mut().prev = Some(Rc::clone(&last_item));
+            array_mut.child.as_ref().unwrap().borrow_mut().prev = Some(Rc::clone(&item));
+        }
+    }
+
+    true
+}
+
+pub fn cjson_add_item_to_array(array: &Rc<RefCell<CJSON>>, item: Rc<RefCell<CJSON>>) -> bool {
+    add_item_to_array(array, item)
+}
+
+
 
 #[cfg(test)]
 mod tests {
