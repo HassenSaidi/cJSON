@@ -184,7 +184,7 @@ pub fn cjson_create_string_array(strings: &[&str]) -> Option<Rc<RefCell<CJSON>>>
     }
 
     let array = cjson_create_array();
-    let mut prev = None;
+    let mut prev: Option<Rc<RefCell<CJSON>>>  = None;
 
     for &string in strings {
         let string_item = cjson_create_string(string);
