@@ -332,7 +332,7 @@ pub fn cjson_get_array_item(array: &Rc<RefCell<CJSON>>, index: i32) -> Option<Rc
 }
 
 fn add_item_to_array(array: &Rc<RefCell<CJSON>>, item: Rc<RefCell<CJSON>>) -> bool {
-    if Rc::ptr_eq(&array, &item) || array.borrow().item_type != CJSON_ARRAY {
+    if Rc::ptr_eq(&array, &item) || array.borrow().type_ != CJSON_ARRAY {
         return false;
     }
 
