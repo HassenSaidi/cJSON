@@ -350,6 +350,6 @@ mod tests {
 
         // Check the size of the array
         let size = cjson_get_array_size(&array);
-        assert_eq!(strings.len() as i32).try_into().unwrap();
+        assert_eq!(size, (strings.len() as i32).try_into().unwrap());
     }
 }
