@@ -473,7 +473,8 @@ pub fn cjson_print(item: &Rc<RefCell<CJSON>>) -> Option<String> {
         CJSON_TRUE => Some("true".to_string()),
         CJSON_FALSE => Some("false".to_string()),
         CJSON_NUMBER => Some(format!("{}", item_borrow.valuedouble)),
-        CJSON_STRING => item_borrow.valuestring.clone(),
+        //CJSON_STRING => item_borrow.valuestring.clone(),
+        CJSON_STRING => Some(format!("\"{}\"", item_borrow.valuestring.as_deref().unwrap_or(""))),
         CJSON_ARRAY => {
             let mut result = String::from("[");
             let mut child = item_borrow.child.clone();
