@@ -757,24 +757,6 @@ fn print_string(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> b
     }
 }
 
-fn ensure_capacity(output_buffer: &mut PrintBuffer, required: usize) -> bool {
-    let current_capacity = output_buffer.buffer.capacity();
-    let needed_capacity = output_buffer.offset + required;
-
-    // If the current capacity is less than needed, reserve more space
-    if current_capacity < needed_capacity {
-        output_buffer.buffer.reserve(needed_capacity - current_capacity);
-        println!(
-            "Reserving capacity: current = {}, needed = {}, new capacity = {}",
-            current_capacity,
-            needed_capacity,
-            output_buffer.buffer.capacity()
-        );
-    }
-
-    true
-}
-
 fn print_value(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bool {
     let item_borrow = item.borrow();
 
