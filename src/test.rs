@@ -15,6 +15,7 @@ use cjson::cJSON::cjson_create_array;
 use cjson::cJSON::cjson_create_int_array;
 use cjson::cJSON::cjson_add_item_to_array;
 use cjson::cJSON::cjson_version;
+use cjson::cJSON::cjson_print_preallocated;
 
 
 
