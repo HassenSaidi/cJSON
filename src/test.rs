@@ -126,8 +126,8 @@ fn create_objects() {
             }
         }    
 
-    cjson_delete(Some(root.expect("cJSON object Should not be NULL")));
-
+    cjson_delete(root);
+   
     // Days of the week array
     let root = cjson_create_string_array(&strings);
 
@@ -139,7 +139,8 @@ fn create_objects() {
             }
         } 
     */
-    cjson_delete(Some(root.expect("cJSON object Should not be NULL")));
+    cjson_delete(root);
+    
 
     // Matrix array
     let root = cjson_create_array();
@@ -156,8 +157,8 @@ fn create_objects() {
             }
         } 
     */
-    cjson_delete(Some(root.expect("cJSON object Should not be NULL")));
-
+    cjson_delete(root);
+    
     // Gallery item
     let root = cjson_create_object();
     let img = cjson_create_object();
@@ -182,7 +183,8 @@ fn create_objects() {
             }
         } 
     */
-    cjson_delete(Some(root.expect("cJSON object Should not be NULL")));
+    cjson_delete(root);
+    
 
     // Array of records
     let root = cjson_create_array();
@@ -207,7 +209,8 @@ fn create_objects() {
             }
         } 
     */
-    cjson_delete(Some(root.expect("cJSON object Should not be NULL")));
+    cjson_delete(root);
+    
 
     // Division by zero example
     let root = cjson_create_object();
@@ -221,7 +224,7 @@ fn create_objects() {
             }
         } 
         */
-    cjson_delete(Some(root.expect("cJSON object Should not be NULL")));
+    cjson_delete(root);
 }
 
 
