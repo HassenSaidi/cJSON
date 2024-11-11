@@ -1,6 +1,15 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 
+const CJSON_VERSION_MAJOR: u32 = 1;
+const CJSON_VERSION_MINOR: u32 = 7;
+const CJSON_VERSION_PATCH: u32 = 15;
+
+pub fn cjson_version() -> String {
+    format!("{}.{}.{}", CJSON_VERSION_MAJOR, CJSON_VERSION_MINOR, CJSON_VERSION_PATCH)
+}
+
+
 pub const CJSON_NULL: u32 = 0;
 pub const CJSON_FALSE: u32 = 1;
 pub const CJSON_TRUE: u32 = 2;
