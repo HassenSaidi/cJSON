@@ -1041,6 +1041,149 @@ mod tests {
         let result = print_string(&item, &mut print_buffer);
         assert!(!result);
     }
+
+    #[test]
+    fn test_print_string_multiline() {
+        let item = cjson_create_string("Line1\nLine2\nLine3");
+        let mut buffer = String::new();
+        let mut print_buffer = PrintBuffer {
+            buffer: &mut buffer,
+            length: 0,
+            offset: 0,
+            noalloc: false,
+            format: false,
+        };
+
+        let result = print_string(&item, &mut print_buffer);
+        assert!(result);
+        assert_eq!(print_buffer.buffer, "\"Line1\\nLine2\\nLine3\"");
+    }
+
+    #[test]
+    fn test_print_string_with_control_characters() {
+        let item = cjson_create_string("Control chars: \x01\x02\x03");
+        let mut buffer = String::new();
+        let mut print_buffer = PrintBuffer {
+            buffer: &mut buffer,
+            length: 0,
+            offset: 0,
+            noalloc: false,
+            format: false,
+        };
+
+        let result = print_string(&item, &mut print_buffer);
+        assert!(result);
+        assert_eq!(
+            print_buffer.buffer,
+            "\"Control chars: \\u0001\\u0002\\u0003\""
+        );
+    }
+
+    #[test]
+    fn test_print_string_with_mixed_escape_sequences() {
+        let item = cjson_create_string("Tab\tNewline\nQuote\"Backslash\\");
+        let mut buffer = String::new();
+        let mut print_buffer = PrintBuffer {
+            buffer: &mut buffer,
+            length: 0,
+            offset: 0,
+            noalloc: false,
+            format: false,
+        };
+
+        let result = print_string(&item, &mut print_buffer);
+        assert!(result);
+        assert_eq!(
+            print_buffer.buffer,
+            "\"Tab\\tNewline\\nQuote\\\"Backslash\\\\\""
+        );
+    }
+
+    #[test]
+    fn test_print_string_empty() {
+        let item = cjson_create_string("");
+        let mut buffer = String::new();
+        let mut print_buffer = PrintBuffer {
+            buffer: &mut buffer,
+            length: 0,
+            offset: 0,
+            noalloc: false,
+            format: false,
+        };
+
+        let result = print_string(&item, &mut print_buffer);
+        assert!(result);
+        assert_eq!(print_buffer.buffer, "\"\"");
+    }
+
+    #[test]
+    fn test_print_string_large_input() {
+        let large_string = "A".repeat(1000);
+        let item = cjson_create_string(&large_string);
+        let mut buffer = String::new();
+        let mut print_buffer = PrintBuffer {
+            buffer: &mut buffer,
+            length: 0,
+            offset: 0,
+            noalloc: false,
+            format: false,
+        };
+
+        let result = print_string(&item, &mut print_buffer);
+        assert!(result);
+        assert_eq!(print_buffer.buffer, format!("\"{}\"", large_string));
+    }
+
+    #[test]
+    fn test_print_string_with_utf8() {
+        let item = cjson_create_string("こんにちは世界");
+        let mut buffer = String::new();
+        let mut print_buffer = PrintBuffer {
+            buffer: &mut buffer,
+            length: 0,
+            offset: 0,
+            noalloc: false,
+            format: false,
+        };
+
+        let result = print_string(&item, &mut print_buffer);
+        assert!(result);
+        assert_eq!(print_buffer.buffer, "\"こんにちは世界\"");
+    }
+
+    #[test]
+    fn test_print_string_with_emoji() {
+        let item = cjson_create_string("Smile 😊, Heart ❤️, Rocket 🚀");
+        let mut buffer = String::new();
+        let mut print_buffer = PrintBuffer {
+            buffer: &mut buffer,
+            length: 0,
+            offset: 0,
+            noalloc: false,
+            format: false,
+        };
+
+        let result = print_string(&item, &mut print_buffer);
+        assert!(result);
+        assert_eq!(print_buffer.buffer, "\"Smile 😊, Heart ❤️, Rocket 🚀\"");
+    }
+
+    #[test]
+    fn test_print_string_with_backslashes() {
+        let item = cjson_create_string("Path: C:\\Program Files\\App");
+        let mut buffer = String::new();
+        let mut print_buffer = PrintBuffer {
+            buffer: &mut buffer,
+            length: 0,
+            offset: 0,
+            noalloc: false,
+            format: false,
+        };
+
+        let result = print_string(&item, &mut print_buffer);
+        assert!(result);
+        assert_eq!(print_buffer.buffer, "\"Path: C:\\\\Program Files\\\\App\"");
+    }
     
 }
 
