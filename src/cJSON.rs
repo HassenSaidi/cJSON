@@ -18,7 +18,7 @@ pub struct CJSON {
     pub next: Option<Rc<RefCell<CJSON>>>,
     pub prev: Option<Rc<RefCell<CJSON>>>,
     pub child: Option<Rc<RefCell<CJSON>>>,
-    pub type_: u32,
+    pub item_type: u32,
     pub valuestring: Option<String>,
     pub valueint: i32,
     pub valuedouble: f64,
@@ -31,7 +31,7 @@ pub fn cJSON_New_Item() -> Rc<RefCell<CJSON>> {
         next: None,
         prev: None,
         child: None,
-        type_: CJSON_NULL,
+        item_type: CJSON_NULL,
         valuestring: None,
         valueint: 0,
         valuedouble: 0.0,
@@ -41,25 +41,25 @@ pub fn cJSON_New_Item() -> Rc<RefCell<CJSON>> {
 
 pub fn cjson_create_null() -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
-    item.borrow_mut().type_ = CJSON_NULL;
+    item.borrow_mut().item_type = CJSON_NULL;
     item
 }
 
 pub fn cjson_create_true() -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
-    item.borrow_mut().type_ = CJSON_TRUE;
+    item.borrow_mut().item_type = CJSON_TRUE;
     item
 }
 
 pub fn cjson_create_false() -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
-    item.borrow_mut().type_ = CJSON_FALSE;
+    item.borrow_mut().item_type = CJSON_FALSE;
     item
 }
 
 pub fn cjson_create_bool(boolean: bool) -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
-    item.borrow_mut().type_ = if boolean { CJSON_TRUE } else { CJSON_FALSE };
+    item.borrow_mut().item_type = if boolean { CJSON_TRUE } else { CJSON_FALSE };
     item
 }
 
@@ -67,7 +67,7 @@ pub fn cjson_create_number(num: f64) -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
     {
         let mut item_mut = item.borrow_mut();
-        item_mut.type_ = CJSON_NUMBER;
+        item_mut.item_type = CJSON_NUMBER;
         item_mut.valuedouble = num;
         item_mut.valueint = num as i32; // cast to integer for backward compatibility
     }
@@ -78,7 +78,7 @@ pub fn cjson_create_string_reference(string: &str) -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
     {
         let mut item_mut = item.borrow_mut();
-        item_mut.type_ = CJSON_STRING | CJSON_IS_REFERENCE;
+        item_mut.item_type = CJSON_STRING | CJSON_IS_REFERENCE;
         item_mut.valuestring = Some(string.to_string()); // Store reference flag without ownership
     }
     item
@@ -88,7 +88,7 @@ pub fn cjson_create_object_reference(child: Rc<RefCell<CJSON>>) -> Rc<RefCell<CJ
     let item = cJSON_New_Item();
     {
         let mut item_mut = item.borrow_mut();
-        item_mut.type_ = CJSON_OBJECT | CJSON_IS_REFERENCE;
+        item_mut.item_type = CJSON_OBJECT | CJSON_IS_REFERENCE;
         item_mut.child = Some(child); // Reference to existing object
     }
     item
@@ -98,7 +98,7 @@ pub fn cjson_create_array_reference(child: Rc<RefCell<CJSON>>) -> Rc<RefCell<CJS
     let item = cJSON_New_Item();
     {
         let mut item_mut = item.borrow_mut();
-        item_mut.type_ = CJSON_ARRAY | CJSON_IS_REFERENCE;
+        item_mut.item_type = CJSON_ARRAY | CJSON_IS_REFERENCE;
         item_mut.child = Some(child); // Reference to existing array
     }
     item
@@ -108,7 +108,7 @@ pub fn cjson_create_raw(raw: &str) -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
     {
         let mut item_mut = item.borrow_mut();
-        item_mut.type_ = CJSON_RAW;
+        item_mut.item_type = CJSON_RAW;
         item_mut.valuestring = Some(raw.to_string()); // Store raw JSON string
     }
     item
@@ -116,13 +116,13 @@ pub fn cjson_create_raw(raw: &str) -> Rc<RefCell<CJSON>> {
 
 pub fn cjson_create_array() -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
-    item.borrow_mut().type_ = CJSON_ARRAY;
+    item.borrow_mut().item_type = CJSON_ARRAY;
     item
 }
 
 pub fn cjson_create_object() -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
-    item.borrow_mut().type_ = CJSON_OBJECT;
+    item.borrow_mut().item_type = CJSON_OBJECT;
     item
 }
 
@@ -132,7 +132,7 @@ pub fn cjson_create_string(s: &str) -> Rc<RefCell<CJSON>> {
     let item = cJSON_New_Item();
     {
         let mut item_mut = item.borrow_mut();
-        item_mut.type_ = CJSON_STRING;
+        item_mut.item_type = CJSON_STRING;
         item_mut.valuestring = Some(s.to_string());
     }
     item
@@ -145,7 +145,7 @@ pub fn cJSON_CreateStringArray(strings: &[&str]) -> Option<Rc<RefCell<CJSON>>> {
     }
 
     let array = cJSON_New_Item();
-    array.borrow_mut().type_ = CJSON_ARRAY;
+    array.borrow_mut().item_type = CJSON_ARRAY;
 
     let mut prev_node: Option<Rc<RefCell<CJSON>>> = None;
     let mut first_child: Option<Rc<RefCell<CJSON>>> = None;
@@ -332,7 +332,7 @@ pub fn cjson_get_array_item(array: &Rc<RefCell<CJSON>>, index: i32) -> Option<Rc
 }
 
 fn add_item_to_array(array: &Rc<RefCell<CJSON>>, item: Rc<RefCell<CJSON>>) -> bool {
-    if Rc::ptr_eq(&array, &item) || array.borrow().type_ != CJSON_ARRAY {
+    if Rc::ptr_eq(&array, &item) || array.borrow().item_type != CJSON_ARRAY {
         return false;
     }
 
@@ -379,19 +379,19 @@ fn add_item_to_object(
 
     let mut item_mut = item.borrow_mut();
     let new_type = if constant_key {
-        item_mut.type_ | CJSON_STRING_IS_CONST
+        item_mut.item_type | CJSON_STRING_IS_CONST
     } else {
-        item_mut.type_ & !CJSON_STRING_IS_CONST
+        item_mut.item_type & !CJSON_STRING_IS_CONST
     };
 
     // If the item previously had a string key, clear it if it was not a constant
-    if (item_mut.type_ & CJSON_STRING_IS_CONST) == 0 {
+    if (item_mut.item_type & CJSON_STRING_IS_CONST) == 0 {
         item_mut.string = None;
     }
 
     // Set the new key and update the item type
     item_mut.string = Some(new_key);
-    item_mut.type_ = new_type;
+    item_mut.item_type = new_type;
 
     // Add the item to the object (which is represented as an array of key-value pairs)
     cjson_add_item_to_array(object, item)
@@ -408,19 +408,19 @@ pub fn cjson_delete(item: Option<Rc<RefCell<CJSON>>>) {
         let next = node_mut.next.clone();
 
         // Recursively delete child if it's not a reference
-        if (node_mut.type_ & CJSON_IS_REFERENCE) == 0 {
+        if (node_mut.item_type & CJSON_IS_REFERENCE) == 0 {
             if let Some(child) = node_mut.child.take() {
                 cjson_delete(Some(child));
             }
         }
 
         // Clear the valuestring if it's not a reference
-        if (node_mut.type_ & CJSON_IS_REFERENCE) == 0 {
+        if (node_mut.item_type & CJSON_IS_REFERENCE) == 0 {
             node_mut.valuestring = None;
         }
 
         // Clear the string if it's not marked as const
-        if (node_mut.type_ & CJSON_STRING_IS_CONST) == 0 {
+        if (node_mut.item_type & CJSON_STRING_IS_CONST) == 0 {
             node_mut.string = None;
         }
 
@@ -440,21 +440,21 @@ mod tests {
     let array = cjson_create_string_array(&strings).unwrap();
 
     // Check that the type is CJSON_ARRAY
-    assert_eq!(array.borrow().type_, CJSON_ARRAY);
+    assert_eq!(array.borrow().item_type, CJSON_ARRAY);
     
     // Check the first child
     let childv = array.borrow_mut().child.clone().expect("Array should have a child");
-    assert_eq!(childv.borrow().type_, CJSON_STRING);
+    assert_eq!(childv.borrow().item_type, CJSON_STRING);
     assert_eq!(childv.borrow().valuestring, Some("Hello".to_string()));
     
     // Move to the next child
     let childv = childv.borrow_mut().next.clone().expect("First child should have a next");
-    assert_eq!(childv.borrow().type_, CJSON_STRING);
+    assert_eq!(childv.borrow().item_type, CJSON_STRING);
     assert_eq!(childv.borrow().valuestring, Some("world".to_string()));
         
     // Move to the next child
     let childv = childv.borrow_mut().next.clone().expect("Second child should have a next");
-    assert_eq!(childv.borrow().type_, CJSON_STRING);
+    assert_eq!(childv.borrow().item_type, CJSON_STRING);
     assert_eq!(childv.borrow().valuestring, Some("Rust".to_string()));
 
     // Ensure that there are no more children
@@ -468,7 +468,7 @@ mod tests {
         let array = cjson_create_string_array(&strings).unwrap();
 
         // Check that the type is CJSON_ARRAY
-        assert_eq!(array.borrow().type_, CJSON_ARRAY);
+        assert_eq!(array.borrow().item_type, CJSON_ARRAY);
 
         // Check the size of the array
         let size = cjson_get_array_size(&array);
