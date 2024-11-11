@@ -965,6 +965,83 @@ mod tests {
         assert!(result);
         assert_eq!(print_buffer.buffer, "\"Hello, world!\"");
     }
+
+    #[test]
+    fn test_print_string_with_escape_characters() {
+        let item = cjson_create_string("Line1\nLine2\tTabbed");
+        let mut buffer = String::new();
+        let mut print_buffer = PrintBuffer {
+            buffer: &mut buffer,
+            length: 0,
+            offset: 0,
+            noalloc: false,
+            format: false,
+        };
+
+        let result = print_string(&item, &mut print_buffer);
+        assert!(result);
+        assert_eq!(print_buffer.buffer, "\"Line1\\nLine2\\tTabbed\"");
+    }
+
+    #[test]
+    fn test_print_string_with_quotes() {
+        let item = cjson_create_string("She said, \"Hello!\"");
+        let mut buffer = String::new();
+        let mut print_buffer = PrintBuffer {
+            buffer: &mut buffer,
+            length: 0,
+            offset: 0,
+            noalloc: false,
+            format: false,
+        };
+
+        let result = print_string(&item, &mut print_buffer);
+        assert!(result);
+        assert_eq!(print_buffer.buffer, "\"She said, \\\"Hello!\\\"\"");
+    }
+
+    #[test]
+    fn test_print_string_with_unicode() {
+        let item = cjson_create_string("Emoji: 😊");
+        let mut buffer = String::new();
+        let mut print_buffer = PrintBuffer {
+            buffer: &mut buffer,
+            length: 0,
+            offset: 0,
+            noalloc: false,
+            format: false,
+        };
+
+        let result = print_string(&item, &mut print_buffer);
+        assert!(result);
+        assert_eq!(print_buffer.buffer, "\"Emoji: 😊\"");
+    }
+
+    #[test]
+    fn test_print_string_null() {
+        let item = Rc::new(RefCell::new(CJSON {
+            next: None,
+            prev: None,
+            child: None,
+            item_type: CJSON_STRING,
+            valuestring: None,
+            valueint: 0,
+            valuedouble: 0.0,
+            string: None,
+        }));
+        let mut buffer = String::new();
+        let mut print_buffer = PrintBuffer {
+            buffer: &mut buffer,
+            length: 0,
+            offset: 0,
+            noalloc: false,
+            format: false,
+        };
+
+        let result = print_string(&item, &mut print_buffer);
+        assert!(!result);
+    }
+    
 }
 
 }
