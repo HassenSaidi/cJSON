@@ -580,6 +580,122 @@ fn ensure_capacity(output_buffer: &mut PrintBuffer, required: usize) -> bool {
     true
 }
 
+
+fn print_number(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bool {
+    let item_borrow = item.borrow();
+    let number = item_borrow.valuedouble;
+
+    // Determine if the number is an integer or a floating-point value
+    let output = if number.fract() == 0.0 {
+        // Print as an integer if there is no fractional part
+        format!("{}", number as i64)
+    } else {
+        // Print as a floating-point number
+        format!("{:.17}", number)
+    };
+
+    // Ensure there is enough capacity in the buffer
+    if ensure_capacity(output_buffer, output.len()) {
+        output_buffer.buffer.push_str(&output);
+        true
+    } else {
+        false
+    }
+}
+
+
+fn print_string_ptr(input: &str, output_buffer: &mut PrintBuffer) -> bool {
+    // Calculate the required length for the escaped string, including surrounding quotes
+    let mut escaped_string = String::with_capacity(input.len() + 2);
+    escaped_string.push('"');
+
+    for c in input.chars() {
+        match c {
+            // Escape common JSON special characters
+            '"' => escaped_string.push_str("\\\""),
+            '\\' => escaped_string.push_str("\\\\"),
+            '\b' => escaped_string.push_str("\\b"),
+            '\f' => escaped_string.push_str("\\f"),
+            '\n' => escaped_string.push_str("\\n"),
+            '\r' => escaped_string.push_str("\\r"),
+            '\t' => escaped_string.push_str("\\t"),
+            // Escape non-printable ASCII characters
+            c if c.is_control() => escaped_string.push_str(&format!("\\u{:04x}", c as u32)),
+            // Regular character
+            _ => escaped_string.push(c),
+        }
+    }
+
+    escaped_string.push('"');
+
+    // Ensure capacity in the output buffer and append the escaped string
+    if ensure_capacity(output_buffer, escaped_string.len()) {
+        output_buffer.buffer.push_str(&escaped_string);
+        true
+    } else {
+        false
+    }
+}
+
+fn print_object(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bool {
+    let item_borrow = item.borrow();
+
+    // Start the object with an opening brace
+    if !ensure_capacity(output_buffer, 1) {
+        return false;
+    }
+    output_buffer.buffer.push('{');
+
+    // Traverse the child list
+    let mut child = item_borrow.child.clone();
+    let mut first = true;
+
+    while let Some(current) = child {
+        let current_borrow = current.borrow();
+
+        // Ensure that the current item has a string key
+        if let Some(key) = &current_borrow.string {
+            // Add a comma separator if this is not the first item
+            if !first {
+                if !ensure_capacity(output_buffer, 2) {
+                    return false;
+                }
+                output_buffer.buffer.push_str(", ");
+            }
+
+            // Print the key as a string
+            if !print_string_ptr(key, output_buffer) {
+                return false;
+            }
+
+            // Add the key-value separator
+            if !ensure_capacity(output_buffer, 2) {
+                return false;
+            }
+            output_buffer.buffer.push_str(": ");
+
+            // Print the value of the current item
+            if !print_value(&current, output_buffer) {
+                return false;
+            }
+
+            first = false;
+        }
+
+        // Move to the next item in the list
+        child = current_borrow.next.clone();
+    }
+
+    // Close the object with a closing brace
+    if !ensure_capacity(output_buffer, 1) {
+        return false;
+    }
+    output_buffer.buffer.push('}');
+
+    true
+}
+
+
 fn print_value(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bool {
     if item.borrow().item_type == CJSON_INVALID || output_buffer.buffer.is_empty() {
         return false;
