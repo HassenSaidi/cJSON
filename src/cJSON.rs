@@ -361,6 +361,43 @@ pub fn cjson_add_item_to_array(array: &Rc<RefCell<CJSON>>, item: Rc<RefCell<CJSO
     add_item_to_array(array, item)
 }
 
+fn add_item_to_object(
+    object: &Rc<RefCell<CJSON>>,
+    key: &str,
+    item: Rc<RefCell<CJSON>>,
+    constant_key: bool,
+) -> bool {
+    if Rc::ptr_eq(&object, &item) || key.is_empty() || object.borrow().item_type != CJSON_OBJECT {
+        return false;
+    }
+
+    let new_key = if constant_key {
+        key.to_string()
+    } else {
+        key.to_owned()
+    };
+
+    let mut item_mut = item.borrow_mut();
+    let new_type = if constant_key {
+        item_mut.type_ | CJSON_STRING_IS_CONST
+    } else {
+        item_mut.type_ & !CJSON_STRING_IS_CONST
+    };
+
+    // If the item previously had a string key, clear it if it was not a constant
+    if (item_mut.type_ & CJSON_STRING_IS_CONST) == 0 {
+        item_mut.string = None;
+    }
+
+    // Set the new key and update the item type
+    item_mut.string = Some(new_key);
+    item_mut.type_ = new_type;
+
+    // Add the item to the object (which is represented as an array of key-value pairs)
+    cjson_add_item_to_array(object, item)
+}
+
+
 pub fn cjson_delete(item: Option<Rc<RefCell<CJSON>>>) {
     let mut current = item;
 
