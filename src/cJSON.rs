@@ -408,6 +408,55 @@ pub fn cjson_add_item_to_object(
     add_item_to_object(object, key, item, false)
 }
 
+pub fn cjson_add_true_to_object(object: &Rc<RefCell<CJSON>>, name: &str) -> Option<Rc<RefCell<CJSON>>> {
+    let true_item = cjson_create_true();
+    if add_item_to_object(object, name, Rc::clone(&true_item), false) {
+        Some(true_item)
+    } else {
+        cjson_delete(Some(true_item));
+        None
+    }
+}
+
+pub fn cjson_add_false_to_object(object: &Rc<RefCell<CJSON>>, name: &str) -> Option<Rc<RefCell<CJSON>>> {
+    let false_item = cjson_create_false();
+    if add_item_to_object(object, name, Rc::clone(&false_item), false) {
+        Some(false_item)
+    } else {
+        cjson_delete(Some(false_item));
+        None
+    }
+}
+
+pub fn cjson_add_number_to_object(
+    object: &Rc<RefCell<CJSON>>,
+    name: &str,
+    number: f64,
+) -> Option<Rc<RefCell<CJSON>>> {
+    let number_item = cjson_create_number(number);
+    if add_item_to_object(object, name, Rc::clone(&number_item), false) {
+        Some(number_item)
+    } else {
+        cjson_delete(Some(number_item));
+        None
+    }
+}
+
+pub fn cjson_add_string_to_object(
+    object: &Rc<RefCell<CJSON>>,
+    name: &str,
+    string: &str,
+) -> Option<Rc<RefCell<CJSON>>> {
+    let string_item = cjson_create_string(string);
+    if add_item_to_object(object, name, Rc::clone(&string_item), false) {
+        Some(string_item)
+    } else {
+        cjson_delete(Some(string_item));
+        None
+    }
+}
+
+
 
 pub fn cjson_delete(item: Option<Rc<RefCell<CJSON>>>) {
     let mut current = item;
