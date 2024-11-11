@@ -536,6 +536,32 @@ pub fn cjson_print(item: &Rc<RefCell<CJSON>>) -> Option<String> {
     }
 }
 
+pub fn cjson_print_preallocated(
+    item: &Rc<RefCell<CJSON>>,
+    buffer: &mut String,
+    length: usize,
+    format: bool,
+) -> bool {
+    if length == 0 || buffer.is_empty() {
+        return false;
+    }
+
+    // Ensure the buffer capacity matches the specified length
+    if buffer.capacity() < length {
+        buffer.reserve(length - buffer.capacity());
+    }
+
+    let mut p = PrintBuffer {
+        buffer,
+        length,
+        offset: 0,
+        noalloc: true,
+        format,
+    };
+
+    print_value(item, &mut p)
+}
+
 
 pub fn cjson_delete(item: Option<Rc<RefCell<CJSON>>>) {
     let mut current = item;
