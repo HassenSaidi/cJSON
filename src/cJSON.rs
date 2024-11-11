@@ -574,11 +574,23 @@ pub fn cjson_print_preallocated(
 }
 
 fn ensure_capacity(output_buffer: &mut PrintBuffer, required: usize) -> bool {
-    if output_buffer.buffer.capacity() < output_buffer.offset + required {
-        output_buffer.buffer.reserve(required);
+    let current_capacity = output_buffer.buffer.capacity();
+    let needed_capacity = output_buffer.offset + required;
+
+    // If the current capacity is less than needed, reserve more space
+    if current_capacity < needed_capacity {
+        output_buffer.buffer.reserve(needed_capacity - current_capacity);
+        println!(
+            "Reserving capacity: current = {}, needed = {}, new capacity = {}",
+            current_capacity,
+            needed_capacity,
+            output_buffer.buffer.capacity()
+        );
     }
+
     true
 }
+
 
 fn print_array(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bool {
     let item_borrow = item.borrow();
@@ -745,16 +757,32 @@ fn print_string(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> b
     }
 }
 
+fn ensure_capacity(output_buffer: &mut PrintBuffer, required: usize) -> bool {
+    let current_capacity = output_buffer.buffer.capacity();
+    let needed_capacity = output_buffer.offset + required;
 
-fn print_value(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bool {
-    if item.borrow().item_type == CJSON_INVALID || output_buffer.buffer.is_empty() {
-        return false;
+    // If the current capacity is less than needed, reserve more space
+    if current_capacity < needed_capacity {
+        output_buffer.buffer.reserve(needed_capacity - current_capacity);
+        println!(
+            "Reserving capacity: current = {}, needed = {}, new capacity = {}",
+            current_capacity,
+            needed_capacity,
+            output_buffer.buffer.capacity()
+        );
     }
 
-    match item.borrow().item_type & 0xFF {
+    true
+}
+
+fn print_value(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bool {
+    let item_borrow = item.borrow();
+
+    match item_borrow.item_type & 0xFF {
         CJSON_NULL => {
             if ensure_capacity(output_buffer, 5) {
                 output_buffer.buffer.push_str("null");
+                println!("Added 'null' to buffer");
                 true
             } else {
                 false
@@ -763,6 +791,7 @@ fn print_value(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bo
         CJSON_FALSE => {
             if ensure_capacity(output_buffer, 6) {
                 output_buffer.buffer.push_str("false");
+                println!("Added 'false' to buffer");
                 true
             } else {
                 false
@@ -771,18 +800,30 @@ fn print_value(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bo
         CJSON_TRUE => {
             if ensure_capacity(output_buffer, 5) {
                 output_buffer.buffer.push_str("true");
+                println!("Added 'true' to buffer");
                 true
             } else {
                 false
             }
         }
-        CJSON_NUMBER => print_number(item, output_buffer),
-        CJSON_RAW => {
-            let item_borrow = item.borrow();
-            if let Some(raw_string) = &item_borrow.valuestring {
-                let raw_length = raw_string.len();
-                if ensure_capacity(output_buffer, raw_length) {
-                    output_buffer.buffer.push_str(raw_string);
+        CJSON_NUMBER => {
+            let number = item_borrow.valuedouble;
+            let formatted_number = format!("{}", number);
+            if ensure_capacity(output_buffer, formatted_number.len()) {
+                output_buffer.buffer.push_str(&formatted_number);
+                println!("Added number '{}' to buffer", formatted_number);
+                true
+            } else {
+                false
+            }
+        }
+        CJSON_STRING => {
+            if let Some(valuestring) = &item_borrow.valuestring {
+                if ensure_capacity(output_buffer, valuestring.len() + 2) {
+                    output_buffer.buffer.push('"');
+                    output_buffer.buffer.push_str(valuestring);
+                    output_buffer.buffer.push('"');
+                    println!("Added string '{}' to buffer", valuestring);
                     true
                 } else {
                     false
@@ -791,12 +832,18 @@ fn print_value(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bo
                 false
             }
         }
-        CJSON_STRING => print_string(item, output_buffer),
-        CJSON_ARRAY => print_array(item, output_buffer),
-        CJSON_OBJECT => print_object(item, output_buffer),
+        CJSON_ARRAY => {
+            println!("Printing array");
+            print_array(item, output_buffer)
+        }
+        CJSON_OBJECT => {
+            println!("Printing object");
+            print_object(item, output_buffer)
+        }
         _ => false,
     }
 }
+
 
 
 pub fn cjson_delete(item: Option<Rc<RefCell<CJSON>>>) {
