@@ -653,8 +653,8 @@ fn print_string_ptr(input: &str, output_buffer: &mut PrintBuffer) -> bool {
         match c {
             '"' => escaped_string.push_str("\\\""),
             '\\' => escaped_string.push_str("\\\\"),
-            '\b' => escaped_string.push_str("\\b"),
-            '\f' => escaped_string.push_str("\\f"),
+          //  '\b' => escaped_string.push_str("\\b"),
+           // '\f' => escaped_string.push_str("\\f"),
             '\n' => escaped_string.push_str("\\n"),
             '\r' => escaped_string.push_str("\\r"),
             '\t' => escaped_string.push_str("\\t"),
