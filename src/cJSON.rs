@@ -493,26 +493,25 @@ pub fn cjson_print(item: &Rc<RefCell<CJSON>>) -> Option<String> {
             Some(result)
         }
         CJSON_OBJECT => {
-        let mut result = String::from("{");
-        let mut child = item_borrow.child.clone();
-        let mut first = true;
-        while let Some(current) = child {
-            let current_borrow = current.borrow();
-            if let Some(key) = &current_borrow.string {
-                if let Some(rendered) = cjson_print(&current) {
-                    if !first {
-                        result.push_str(", ");
+            let mut result = String::from("{");
+            let mut child = item_borrow.child.clone();
+            let mut first = true;
+            while let Some(current) = child {
+                let current_borrow = current.borrow();
+                if let Some(key) = &current_borrow.string {
+                    if let Some(rendered) = cjson_print(&current) {
+                        if !first {
+                            result.push_str(", ");
+                        }
+                        result.push_str(&format!("\"{}\": {}", key, rendered));
+                        first = false;
                     }
-                    result.push_str(&format!("\"{}\": {}", key, rendered));
-                    first = false;
                 }
+                child = current_borrow.next.clone();
             }
-            child = current_borrow.next.clone();
-        }
-
         result.push('}');
         Some(result)
-    }
+        }
         _ => None,
     }
 }
