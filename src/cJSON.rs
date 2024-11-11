@@ -644,7 +644,6 @@ fn print_number(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> b
     }
 }
 
-
 fn print_string_ptr(input: &str, output_buffer: &mut PrintBuffer) -> bool {
     // Calculate the required length for the escaped string, including surrounding quotes
     let mut escaped_string = String::with_capacity(input.len() + 2);
@@ -652,11 +651,10 @@ fn print_string_ptr(input: &str, output_buffer: &mut PrintBuffer) -> bool {
 
     for c in input.chars() {
         match c {
-            // Escape common JSON special characters
             '"' => escaped_string.push_str("\\\""),
             '\\' => escaped_string.push_str("\\\\"),
-            r"\b" => escaped_string.push_str("\\b"),
-            r"\f" => escaped_string.push_str("\\f"),
+            '\b' => escaped_string.push_str("\\b"),
+            '\f' => escaped_string.push_str("\\f"),
             '\n' => escaped_string.push_str("\\n"),
             '\r' => escaped_string.push_str("\\r"),
             '\t' => escaped_string.push_str("\\t"),
