@@ -948,6 +948,23 @@ mod tests {
             Some("{\"title\": \"Example\", \"details\": [\"nested\", 99]}".to_string())
         );
     }
+
+     #[test]
+    fn test_print_string_simple() {
+        let item = cjson_create_string("Hello, world!");
+        let mut buffer = String::new();
+        let mut print_buffer = PrintBuffer {
+            buffer: &mut buffer,
+            length: 0,
+            offset: 0,
+            noalloc: false,
+            format: false,
+        };
+
+        let result = print_string(&item, &mut print_buffer);
+        assert!(result);
+        assert_eq!(print_buffer.buffer, "\"Hello, world!\"");
+    }
 }
 
 }
