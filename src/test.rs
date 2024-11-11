@@ -31,12 +31,11 @@ struct Record<'a> {
     country: &'a str,
 }
 
-
 fn print_preallocated(root: &Rc<RefCell<CJSON>>) -> Result<(), String> {
-    // Get the formatted JSON string
-    let out = cjson_print(root).ok_or_else(|| "Failed to generate JSON string".to_string())?;
+    // Generate formatted JSON string
+    let out = cjson_print(root).ok_or("Failed to generate JSON string")?;
 
-    // Create a buffer with extra space (for safety)
+    // Create a buffer to succeed (with extra space for safety)
     let len = out.len() + 5;
     let mut buf = String::with_capacity(len);
 
@@ -45,7 +44,7 @@ fn print_preallocated(root: &Rc<RefCell<CJSON>>) -> Result<(), String> {
     let mut buf_fail = String::with_capacity(len_fail);
 
     // Attempt to print into the buffer with extra capacity
-    if !cjson_print_preallocated(root, &mut buf, (len as i32).try_into().unwrap(), true) {
+    if !cjson_print_preallocated(root, &mut buf, len, true) {
         println!("cJSON_PrintPreallocated failed!");
 
         if out != buf {
@@ -61,7 +60,7 @@ fn print_preallocated(root: &Rc<RefCell<CJSON>>) -> Result<(), String> {
     println!("{}", buf);
 
     // Force a failure by using the smaller buffer
-    if cjson_print_preallocated(root, &mut buf_fail, (len as i32).try_into().unwrap(), true) {
+    if cjson_print_preallocated(root, &mut buf_fail, len_fail, true) {
         println!("cJSON_PrintPreallocated did not fail with insufficient buffer size!");
         println!("cJSON_Print result:\n{}", out);
         println!("cJSON_PrintPreallocated result:\n{}", buf_fail);
@@ -71,9 +70,7 @@ fn print_preallocated(root: &Rc<RefCell<CJSON>>) -> Result<(), String> {
     Ok(())
 }
 
-
-
-pub fn create_objects() {
+fn create_objects() {
     // Days of the week
     let strings = [
         "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
@@ -113,7 +110,7 @@ pub fn create_objects() {
 
     // Video object
     let root = cjson_create_object();
-    cjson_add_item_to_object(&root, "name", cjson_create_string("Jack (\"Bee\") Nimble"));
+    cjson_add_string_to_object(&root, "name", "Jack (\"Bee\") Nimble");
     let fmt = cjson_create_object();
     cjson_add_item_to_object(&root, "format", Rc::clone(&fmt));
     cjson_add_string_to_object(&fmt, "type", "rect");
@@ -122,19 +119,25 @@ pub fn create_objects() {
     cjson_add_false_to_object(&fmt, "interlace");
     cjson_add_number_to_object(&fmt, "frame rate", 24.0);
 
-    if print_preallocated(&root) {
-        cjson_delete(Some(root));
-        return;
-    }
+    if let Some(ref root_obj) = root {
+        if let Err(err) = print_preallocated(root_obj) {
+            println!("Error: {}", err);
+            return;
+            }
+        }    
+
     cjson_delete(Some(root));
 
     // Days of the week array
     let root = cjson_create_string_array(&strings);
 
-    if print_preallocated(&root) {
-        cjson_delete(Some(root));
-        return;
-    }
+    if let Some(ref root_obj) = root {
+        if let Err(err) = print_preallocated(root_obj) {
+            println!("Error: {}", err);
+            return;
+            }
+        } 
+    
     cjson_delete(Some(root));
 
     // Matrix array
@@ -144,10 +147,13 @@ pub fn create_objects() {
         cjson_add_item_to_array(&root, int_array);
     }
 
-    if print_preallocated(&root) {
-        cjson_delete(Some(root));
-        return;
-    }
+    if let Some(ref root_obj) = root {
+        if let Err(err) = print_preallocated(root_obj) {
+            println!("Error: {}", err);
+            return;
+            }
+        } 
+    
     cjson_delete(Some(root));
 
     // Gallery item
@@ -164,12 +170,15 @@ pub fn create_objects() {
     cjson_add_number_to_object(&thm, "Height", 125.0);
     cjson_add_string_to_object(&thm, "Width", "100");
 
-    cjson_add_item_to_object(&img, "IDs", cjson_create_int_array(&ids).expect("Should not be None"));
+    cjson_add_item_to_object(&img, "IDs", cjson_create_int_array(&ids));
 
-    if print_preallocated(&root) {
-        cjson_delete(Some(root));
-        return;
-    }
+    if let Some(ref root_obj) = root {
+        if let Err(err) = print_preallocated(root_obj) {
+            println!("Error: {}", err);
+            return;
+            }
+        } 
+    
     cjson_delete(Some(root));
 
     // Array of records
@@ -187,22 +196,28 @@ pub fn create_objects() {
         cjson_add_string_to_object(&fld, "Country", record.country);
     }
 
-    if print_preallocated(&root) {
-        cjson_delete(Some(root));
-        return;
-    }
+    if let Some(ref root_obj) = root {
+        if let Err(err) = print_preallocated(root_obj) {
+            println!("Error: {}", err);
+            return;
+            }
+        } 
+    
     cjson_delete(Some(root));
 
     // Division by zero example
     let root = cjson_create_object();
     cjson_add_number_to_object(&root, "number", 1.0 / zero);
 
-    if print_preallocated(&root) {
-        cjson_delete(Some(root));
-        return;
-    }
+    if let Some(ref root_obj) = root {
+        if let Err(err) = print_preallocated(root_obj) {
+            println!("Error: {}", err);
+            return;
+            }
+        } 
     cjson_delete(Some(root));
 }
+
 
 fn main() {
     // Print the version
