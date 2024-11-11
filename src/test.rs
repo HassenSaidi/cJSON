@@ -117,7 +117,7 @@ fn create_objects() {
     cjson_add_string_to_object(&fmt, "type", "rect");
     cjson_add_number_to_object(&fmt, "width", 1920.0);
     cjson_add_number_to_object(&fmt, "height", 1080.0);
-    cJSON_AddFalseToObject(&fmt, "interlace");
+    cjson_add_false_to_object(&fmt, "interlace");
     cjson_add_number_to_object(&fmt, "frame rate", 24.0);
 
     // Print and delete the root object
@@ -136,9 +136,9 @@ fn create_objects() {
     cjson_delete(Some(root));
 
     // Create a matrix array
-    let root = cJSON_CreateArray();
+    let root = cjson_create_array();
     for row in &numbers {
-        let int_array = cJSON_CreateIntArray(row);
+        let int_array = cjson_create_int_array(row);
         cjson_add_item_to_array(&root, int_array);
     }
 
@@ -161,7 +161,7 @@ fn create_objects() {
     cjson_add_string_to_object(&thm, "Url", "http://www.example.com/image/481989943");
     cjson_add_number_to_object(&thm, "Height", 125.0);
     cjson_add_string_to_object(&thm, "Width", "100");
-    cjson_add_item_to_object(&img, "IDs", cJSON_CreateIntArray(&ids));
+    cjson_add_item_to_object(&img, "IDs", cjson_create_int_array(&ids));
 
     if print_preallocated(&root).is_err() {
         cjson_delete(Some(root));
@@ -170,7 +170,7 @@ fn create_objects() {
     cjson_delete(Some(root));
 
     // Create an array of records
-    let root = cJSON_CreateArray();
+    let root = cjson_create_array();
     for record in &fields {
         let fld = cjson_create_object();
         cjson_add_item_to_array(&root, Rc::clone(&fld));
