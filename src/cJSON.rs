@@ -580,6 +580,47 @@ fn ensure_capacity(output_buffer: &mut PrintBuffer, required: usize) -> bool {
     true
 }
 
+fn print_array(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bool {
+    let item_borrow = item.borrow();
+
+    // Start the array with an opening bracket
+    if !ensure_capacity(output_buffer, 1) {
+        return false;
+    }
+    output_buffer.buffer.push('[');
+
+    // Traverse the array elements
+    let mut child = item_borrow.child.clone();
+    let mut first = true;
+
+    while let Some(current) = child {
+        // Add a comma separator if this is not the first element
+        if !first {
+            if !ensure_capacity(output_buffer, 2) {
+                return false;
+            }
+            output_buffer.buffer.push_str(", ");
+        }
+
+        // Print the current element
+        if !print_value(&current, output_buffer) {
+            return false;
+        }
+
+        first = false;
+        // Move to the next element in the array
+        child = current.borrow().next.clone();
+    }
+
+    // Close the array with a closing bracket
+    if !ensure_capacity(output_buffer, 1) {
+        return false;
+    }
+    output_buffer.buffer.push(']');
+
+    true
+}
+
 
 fn print_number(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bool {
     let item_borrow = item.borrow();
@@ -614,8 +655,8 @@ fn print_string_ptr(input: &str, output_buffer: &mut PrintBuffer) -> bool {
             // Escape common JSON special characters
             '"' => escaped_string.push_str("\\\""),
             '\\' => escaped_string.push_str("\\\\"),
-            '\b' => escaped_string.push_str("\\b"),
-            '\f' => escaped_string.push_str("\\f"),
+            r"\b" => escaped_string.push_str("\\b"),
+            r"\f" => escaped_string.push_str("\\f"),
             '\n' => escaped_string.push_str("\\n"),
             '\r' => escaped_string.push_str("\\r"),
             '\t' => escaped_string.push_str("\\t"),
