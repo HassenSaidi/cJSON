@@ -9,6 +9,14 @@ pub fn cjson_version() -> String {
     format!("{}.{}.{}", CJSON_VERSION_MAJOR, CJSON_VERSION_MINOR, CJSON_VERSION_PATCH)
 }
 
+struct PrintBuffer<'a> {
+    buffer: &'a mut String,
+    length: usize,
+    offset: usize,
+    noalloc: bool,
+    format: bool,
+}
+
 
 pub const CJSON_NULL: u32 = 0;
 pub const CJSON_FALSE: u32 = 1;
@@ -560,6 +568,65 @@ pub fn cjson_print_preallocated(
     };
 
     print_value(item, &mut p)
+}
+
+fn ensure_capacity(output_buffer: &mut PrintBuffer, required: usize) -> bool {
+    if output_buffer.buffer.capacity() < output_buffer.offset + required {
+        output_buffer.buffer.reserve(required);
+    }
+    true
+}
+
+fn print_value(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bool {
+    if item.borrow().item_type == CJSON_INVALID || output_buffer.buffer.is_empty() {
+        return false;
+    }
+
+    match item.borrow().item_type & 0xFF {
+        CJSON_NULL => {
+            if ensure_capacity(output_buffer, 5) {
+                output_buffer.buffer.push_str("null");
+                true
+            } else {
+                false
+            }
+        }
+        CJSON_FALSE => {
+            if ensure_capacity(output_buffer, 6) {
+                output_buffer.buffer.push_str("false");
+                true
+            } else {
+                false
+            }
+        }
+        CJSON_TRUE => {
+            if ensure_capacity(output_buffer, 5) {
+                output_buffer.buffer.push_str("true");
+                true
+            } else {
+                false
+            }
+        }
+        CJSON_NUMBER => print_number(item, output_buffer),
+        CJSON_RAW => {
+            let item_borrow = item.borrow();
+            if let Some(raw_string) = &item_borrow.valuestring {
+                let raw_length = raw_string.len();
+                if ensure_capacity(output_buffer, raw_length) {
+                    output_buffer.buffer.push_str(raw_string);
+                    true
+                } else {
+                    false
+                }
+            } else {
+                false
+            }
+        }
+        CJSON_STRING => print_string(item, output_buffer),
+        CJSON_ARRAY => print_array(item, output_buffer),
+        CJSON_OBJECT => print_object(item, output_buffer),
+        _ => false,
+    }
 }
 
 
