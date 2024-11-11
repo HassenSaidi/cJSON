@@ -17,18 +17,21 @@ struct PrintBuffer<'a> {
     format: bool,
 }
 
+// cJSON Types
+const CJSON_INVALID: u32 = 0;
+const CJSON_FALSE: u32 = 1 << 0;
+const CJSON_TRUE: u32 = 1 << 1;
+const CJSON_NULL: u32 = 1 << 2;
+const CJSON_NUMBER: u32 = 1 << 3;
+const CJSON_STRING: u32 = 1 << 4;
+const CJSON_ARRAY: u32 = 1 << 5;
+const CJSON_OBJECT: u32 = 1 << 6;
+const CJSON_RAW: u32 = 1 << 7; // Raw JSON
 
-pub const CJSON_NULL: u32 = 0;
-pub const CJSON_FALSE: u32 = 1;
-pub const CJSON_TRUE: u32 = 2;
-pub const CJSON_NUMBER: u32 = 3;
-pub const CJSON_STRING: u32 = 4;
-pub const CJSON_ARRAY: u32 = 5;
-pub const CJSON_OBJECT: u32 = 6;
-pub const CJSON_RAW: u32 = 7;
-
+// cJSON Flags
 const CJSON_IS_REFERENCE: u32 = 256;
 const CJSON_STRING_IS_CONST: u32 = 512;
+
 
 #[derive(Debug)]
 pub struct CJSON {
