@@ -377,26 +377,28 @@ fn add_item_to_object(
         key.to_owned()
     };
 
-    let mut item_mut = item.borrow_mut();
-    let new_type = if constant_key {
-        item_mut.item_type | CJSON_STRING_IS_CONST
-    } else {
-        item_mut.item_type & !CJSON_STRING_IS_CONST
-    };
+    {
+        // Limit the scope of the mutable borrow
+        let mut item_mut = item.borrow_mut();
+        let new_type = if constant_key {
+            item_mut.item_type | CJSON_STRING_IS_CONST
+        } else {
+            item_mut.item_type & !CJSON_STRING_IS_CONST
+        };
 
-    // If the item previously had a string key, clear it if it was not a constant
-    if (item_mut.item_type & CJSON_STRING_IS_CONST) == 0 {
-        item_mut.string = None;
-    }
+        // If the item previously had a string key, clear it if it was not a constant
+        if (item_mut.item_type & CJSON_STRING_IS_CONST) == 0 {
+            item_mut.string = None;
+        }
 
-    // Set the new key and update the item type
-    item_mut.string = Some(new_key);
-    item_mut.item_type = new_type;
+        // Set the new key and update the item type
+        item_mut.string = Some(new_key);
+        item_mut.item_type = new_type;
+    } // `item_mut` goes out of scope here
 
-    // Add the item to the object (which is represented as an array of key-value pairs)
+    // Now we can safely pass `item` to `cjson_add_item_to_array`
     cjson_add_item_to_array(object, item)
 }
-
 
 pub fn cjson_delete(item: Option<Rc<RefCell<CJSON>>>) {
     let mut current = item;
