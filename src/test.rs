@@ -131,13 +131,14 @@ fn create_objects() {
     // Days of the week array
     let root = cjson_create_string_array(&strings);
 
+    /*
     if let Some(ref root_obj) = root {
         if let Err(err) = print_preallocated(root_obj) {
             println!("Error: {}", err);
             return;
             }
         } 
-    
+    */
     cjson_delete(Some(root));
 
     // Matrix array
@@ -147,13 +148,14 @@ fn create_objects() {
         cjson_add_item_to_array(&root, int_array);
     }
 
+    /*
     if let Some(ref root_obj) = root {
         if let Err(err) = print_preallocated(root_obj) {
             println!("Error: {}", err);
             return;
             }
         } 
-    
+    */
     cjson_delete(Some(root));
 
     // Gallery item
@@ -172,13 +174,14 @@ fn create_objects() {
 
     cjson_add_item_to_object(&img, "IDs", cjson_create_int_array(&ids));
 
+    /*
     if let Some(ref root_obj) = root {
         if let Err(err) = print_preallocated(root_obj) {
             println!("Error: {}", err);
             return;
             }
         } 
-    
+    */
     cjson_delete(Some(root));
 
     // Array of records
@@ -196,25 +199,28 @@ fn create_objects() {
         cjson_add_string_to_object(&fld, "Country", record.country);
     }
 
+    /*
     if let Some(ref root_obj) = root {
         if let Err(err) = print_preallocated(root_obj) {
             println!("Error: {}", err);
             return;
             }
         } 
-    
+    */
     cjson_delete(Some(root));
 
     // Division by zero example
     let root = cjson_create_object();
     cjson_add_number_to_object(&root, "number", 1.0 / zero);
 
+    /*
     if let Some(ref root_obj) = root {
         if let Err(err) = print_preallocated(root_obj) {
             println!("Error: {}", err);
             return;
             }
         } 
+        */
     cjson_delete(Some(root));
 }
 
