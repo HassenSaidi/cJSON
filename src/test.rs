@@ -33,7 +33,7 @@ struct Record<'a> {
 
 fn print_preallocated(root: &Rc<RefCell<CJSON>>) -> Result<(), String> {
     // Generate formatted JSON string
-    let out = cjson_print(root).ok_or("Failed to generate JSON string")?;
+    let out = cJSON_Print(root).ok_or("Failed to generate JSON string")?;
 
     // Create a buffer to succeed (with extra space for safety)
     let len = out.len() + 5;
@@ -44,7 +44,7 @@ fn print_preallocated(root: &Rc<RefCell<CJSON>>) -> Result<(), String> {
     let mut buf_fail = String::with_capacity(len_fail);
 
     // Attempt to print into the buffer with extra capacity
-    if !cjson_print_preallocated(root, &mut buf, len, true) {
+    if !cJSON_PrintPreallocated(root, &mut buf, len, true) {
         println!("cJSON_PrintPreallocated failed!");
 
         if out != buf {
@@ -60,7 +60,7 @@ fn print_preallocated(root: &Rc<RefCell<CJSON>>) -> Result<(), String> {
     println!("{}", buf);
 
     // Force a failure by using the smaller buffer
-    if cjson_print_preallocated(root, &mut buf_fail, len_fail, true) {
+    if cJSON_PrintPreallocated(root, &mut buf_fail, len_fail, true) {
         println!("cJSON_PrintPreallocated did not fail with insufficient buffer size!");
         println!("cJSON_Print result:\n{}", out);
         println!("cJSON_PrintPreallocated result:\n{}", buf_fail);
@@ -70,13 +70,14 @@ fn print_preallocated(root: &Rc<RefCell<CJSON>>) -> Result<(), String> {
     Ok(())
 }
 
+
 fn create_objects() {
     // Days of the week
     let strings = [
         "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
     ];
 
-    // Matrix
+    // Matrix of integers
     let numbers = [[0, -1, 0], [1, 0, 0], [0, 0, 1]];
 
     // Gallery IDs
@@ -108,124 +109,98 @@ fn create_objects() {
 
     let zero = 0.0;
 
-    // Video object
-    let root = cjson_create_object();
-    cjson_add_string_to_object(&root, "name", "Jack (\"Bee\") Nimble");
-    let fmt = cjson_create_object();
-    cjson_add_item_to_object(&root, "format", Rc::clone(&fmt));
-    cjson_add_string_to_object(&fmt, "type", "rect");
-    cjson_add_number_to_object(&fmt, "width", 1920.0);
-    cjson_add_number_to_object(&fmt, "height", 1080.0);
-    cjson_add_false_to_object(&fmt, "interlace");
-    cjson_add_number_to_object(&fmt, "frame rate", 24.0);
+    // Create a "Video" JSON object
+    let root = cJSON_CreateObject();
+    cJSON_AddItemToObject(&root, "name", cJSON_CreateString("Jack (\"Bee\") Nimble"));
+    let fmt = cJSON_CreateObject();
+    cJSON_AddItemToObject(&root, "format", Rc::clone(&fmt));
+    cJSON_AddStringToObject(&fmt, "type", "rect");
+    cJSON_AddNumberToObject(&fmt, "width", 1920.0);
+    cJSON_AddNumberToObject(&fmt, "height", 1080.0);
+    cJSON_AddFalseToObject(&fmt, "interlace");
+    cJSON_AddNumberToObject(&fmt, "frame rate", 24.0);
 
-    if let Some(ref root_obj) = root {
-        if let Err(err) = print_preallocated(root_obj) {
-            println!("Error: {}", err);
-            return;
-            }
-        }    
+    // Print and delete the root object
+    if print_preallocated(&root).is_err() {
+        cJSON_DELETE(Some(root));
+        return;
+    }
+    cJSON_DELETE(Some(root));
 
-    cjson_delete(root);
-   
-    // Days of the week array
-    let root = cjson_create_string_array(&strings);
+    // Create "Days of the week" string array
+    let root = cJSON_CreateStringArray(&strings).unwrap();
+    if print_preallocated(&root).is_err() {
+        cJSON_DELETE(Some(root));
+        return;
+    }
+    cJSON_DELETE(Some(root));
 
-    /*
-    if let Some(ref root_obj) = root {
-        if let Err(err) = print_preallocated(root_obj) {
-            println!("Error: {}", err);
-            return;
-            }
-        } 
-    */
-    cjson_delete(root);
-    
-
-    // Matrix array
-    let root = cjson_create_array();
+    // Create a matrix array
+    let root = cJSON_CreateArray();
     for row in &numbers {
-        let int_array = cjson_create_int_array(row);
-        cjson_add_item_to_array(&root, int_array);
+        let int_array = cJSON_CreateIntArray(row);
+        cJSON_AddItemToArray(&root, int_array);
     }
 
-    /*
-    if let Some(ref root_obj) = root {
-        if let Err(err) = print_preallocated(root_obj) {
-            println!("Error: {}", err);
-            return;
-            }
-        } 
-    */
-    cjson_delete(root);
-    
-    // Gallery item
-    let root = cjson_create_object();
-    let img = cjson_create_object();
-    cjson_add_item_to_object(&root, "Image", Rc::clone(&img));
-    cjson_add_number_to_object(&img, "Width", 800.0);
-    cjson_add_number_to_object(&img, "Height", 600.0);
-    cjson_add_string_to_object(&img, "Title", "View from 15th Floor");
+    if print_preallocated(&root).is_err() {
+        cJSON_DELETE(Some(root));
+        return;
+    }
+    cJSON_DELETE(Some(root));
 
-    let thm = cjson_create_object();
-    cjson_add_item_to_object(&img, "Thumbnail", Rc::clone(&thm));
-    cjson_add_string_to_object(&thm, "Url", "http://www.example.com/image/481989943");
-    cjson_add_number_to_object(&thm, "Height", 125.0);
-    cjson_add_string_to_object(&thm, "Width", "100");
+    // Create a "Gallery" JSON object
+    let root = cJSON_CreateObject();
+    let img = cJSON_CreateObject();
+    cJSON_AddItemToObject(&root, "Image", Rc::clone(&img));
+    cJSON_AddNumberToObject(&img, "Width", 800.0);
+    cJSON_AddNumberToObject(&img, "Height", 600.0);
+    cJSON_AddStringToObject(&img, "Title", "View from 15th Floor");
 
-    cjson_add_item_to_object(&img, "IDs", cjson_create_int_array(&ids));
+    let thm = cJSON_CreateObject();
+    cJSON_AddItemToObject(&img, "Thumbnail", Rc::clone(&thm));
+    cJSON_AddStringToObject(&thm, "Url", "http://www.example.com/image/481989943");
+    cJSON_AddNumberToObject(&thm, "Height", 125.0);
+    cJSON_AddStringToObject(&thm, "Width", "100");
+    cJSON_AddItemToObject(&img, "IDs", cJSON_CreateIntArray(&ids));
 
-    /*
-    if let Some(ref root_obj) = root {
-        if let Err(err) = print_preallocated(root_obj) {
-            println!("Error: {}", err);
-            return;
-            }
-        } 
-    */
-    cjson_delete(root);
-    
+    if print_preallocated(&root).is_err() {
+        cJSON_DELETE(Some(root));
+        return;
+    }
+    cJSON_DELETE(Some(root));
 
-    // Array of records
-    let root = cjson_create_array();
+    // Create an array of records
+    let root = cJSON_CreateArray();
     for record in &fields {
-        let fld = cjson_create_object();
-        cjson_add_item_to_array(&root, Rc::clone(&fld));
-        cjson_add_string_to_object(&fld, "precision", record.precision);
-        cjson_add_number_to_object(&fld, "Latitude", record.lat);
-        cjson_add_number_to_object(&fld, "Longitude", record.lon);
-        cjson_add_string_to_object(&fld, "Address", record.address);
-        cjson_add_string_to_object(&fld, "City", record.city);
-        cjson_add_string_to_object(&fld, "State", record.state);
-        cjson_add_string_to_object(&fld, "Zip", record.zip);
-        cjson_add_string_to_object(&fld, "Country", record.country);
+        let fld = cJSON_CreateObject();
+        cJSON_AddItemToArray(&root, Rc::clone(&fld));
+        cJSON_AddStringToObject(&fld, "precision", record.precision);
+        cJSON_AddNumberToObject(&fld, "Latitude", record.lat);
+        cJSON_AddNumberToObject(&fld, "Longitude", record.lon);
+        cJSON_AddStringToObject(&fld, "Address", record.address);
+        cJSON_AddStringToObject(&fld, "City", record.city);
+        cJSON_AddStringToObject(&fld, "State", record.state);
+        cJSON_AddStringToObject(&fld, "Zip", record.zip);
+        cJSON_AddStringToObject(&fld, "Country", record.country);
     }
 
-    /*
-    if let Some(ref root_obj) = root {
-        if let Err(err) = print_preallocated(root_obj) {
-            println!("Error: {}", err);
-            return;
-            }
-        } 
-    */
-    cjson_delete(root);
-    
+    if print_preallocated(&root).is_err() {
+        cJSON_DELETE(Some(root));
+        return;
+    }
+    cJSON_DELETE(Some(root));
 
-    // Division by zero example
-    let root = cjson_create_object();
-    cjson_add_number_to_object(&root, "number", 1.0 / zero);
+    // Handle division by zero example
+    let root = cJSON_CreateObject();
+    cJSON_AddNumberToObject(&root, "number", 1.0 / zero);
 
-    /*
-    if let Some(ref root_obj) = root {
-        if let Err(err) = print_preallocated(root_obj) {
-            println!("Error: {}", err);
-            return;
-            }
-        } 
-        */
-    cjson_delete(root);
+    if print_preallocated(&root).is_err() {
+        cJSON_DELETE(Some(root));
+        return;
+    }
+    cJSON_DELETE(Some(root));
 }
+
 
 
 fn main() {
