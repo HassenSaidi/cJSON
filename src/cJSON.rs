@@ -594,4 +594,79 @@ mod tests {
         let size = cjson_get_array_size(&array);
         assert_eq!(size, (strings.len() as i32).try_into().unwrap());
     }
+
+    #[cfg(test)]
+mod tests {
+    use super::*;
+    use std::rc::Rc;
+    use std::cell::RefCell;
+
+    #[test]
+    fn test_print_null() {
+        let item = cjson_create_null();
+        assert_eq!(cjson_print(&item), Some("null".to_string()));
+    }
+
+    #[test]
+    fn test_print_true() {
+        let item = cjson_create_true();
+        assert_eq!(cjson_print(&item), Some("true".to_string()));
+    }
+
+    #[test]
+    fn test_print_false() {
+        let item = cjson_create_false();
+        assert_eq!(cjson_print(&item), Some("false".to_string()));
+    }
+
+    #[test]
+    fn test_print_number() {
+        let item = cjson_create_number(42.0);
+        assert_eq!(cjson_print(&item), Some("42".to_string()));
+    }
+
+    #[test]
+    fn test_print_string() {
+        let item = cjson_create_string("Hello, world!");
+        assert_eq!(cjson_print(&item), Some("\"Hello, world!\"".to_string()));
+    }
+
+    #[test]
+    fn test_print_array() {
+        let array = cjson_create_array();
+        cjson_add_item_to_array(&array, cjson_create_number(1.0));
+        cjson_add_item_to_array(&array, cjson_create_number(2.0));
+        cjson_add_item_to_array(&array, cjson_create_number(3.0));
+        assert_eq!(cjson_print(&array), Some("[1, 2, 3]".to_string()));
+    }
+
+    #[test]
+    fn test_print_object() {
+        let object = cjson_create_object();
+        cjson_add_string_to_object(&object, "name", "John");
+        cjson_add_number_to_object(&object, "age", 30.0);
+        cjson_add_true_to_object(&object, "is_student");
+        assert_eq!(
+            cjson_print(&object),
+            Some("{\"name\": \"John\", \"age\": 30, \"is_student\": true}".to_string())
+        );
+    }
+
+    #[test]
+    fn test_print_nested_structure() {
+        let object = cjson_create_object();
+        let nested_array = cjson_create_array();
+        cjson_add_item_to_array(&nested_array, cjson_create_string("nested"));
+        cjson_add_item_to_array(&nested_array, cjson_create_number(99.0));
+
+        cjson_add_string_to_object(&object, "title", "Example");
+        cjson_add_item_to_object(&object, "details", nested_array);
+
+        assert_eq!(
+            cjson_print(&object),
+            Some("{\"title\": \"Example\", \"details\": [\"nested\", 99]}".to_string())
+        );
+    }
+}
+
 }
