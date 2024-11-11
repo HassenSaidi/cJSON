@@ -139,7 +139,7 @@ fn create_objects() {
     let root = cjson_create_array();
     for row in &numbers {
         let int_array = cjson_create_int_array(row);
-        cjson_add_item_to_array(&root, int_array);
+        cjson_add_item_to_array(&root, int_array.expect("Array Should Not Be NULL"));
     }
 
     if print_preallocated(&root).is_err() {
@@ -161,7 +161,7 @@ fn create_objects() {
     cjson_add_string_to_object(&thm, "Url", "http://www.example.com/image/481989943");
     cjson_add_number_to_object(&thm, "Height", 125.0);
     cjson_add_string_to_object(&thm, "Width", "100");
-    cjson_add_item_to_object(&img, "IDs", cjson_create_int_array(&ids));
+    cjson_add_item_to_object(&img, "IDs", cjson_create_int_array(&ids).expect("Array Should Not Be NULL"));
 
     if print_preallocated(&root).is_err() {
         cjson_delete(Some(root));
