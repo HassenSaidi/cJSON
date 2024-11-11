@@ -164,7 +164,7 @@ pub fn create_objects() {
     cjson_add_number_to_object(&thm, "Height", 125.0);
     cjson_add_string_to_object(&thm, "Width", "100");
 
-    cjson_add_item_to_object(&img, "IDs", cjson_create_int_array(&ids));
+    cjson_add_item_to_object(&img, "IDs", cjson_create_int_array(&ids).expect("Should not be None"));
 
     if print_preallocated(&root) {
         cjson_delete(Some(root));
