@@ -11,6 +11,6 @@ name = "cjson"
 path = "cjson-lib.rs"
 crate-type = ["staticlib", "rlib"]
 
-#[[bin]]
-#name = "test_cjson"
-#path = "src/test.rs"
+[[bin]]
+name = "test_cjson"
+path = "src/test.rs"
