@@ -465,6 +465,57 @@ pub fn cjson_add_string_to_object(
     }
 }
 
+pub fn cjson_print(item: &Rc<RefCell<CJSON>>) -> Option<String> {
+    let item_borrow = item.borrow();
+
+    match item_borrow.item_type {
+        CJSON_NULL => Some("null".to_string()),
+        CJSON_TRUE => Some("true".to_string()),
+        CJSON_FALSE => Some("false".to_string()),
+        CJSON_NUMBER => Some(format!("{}", item_borrow.valuedouble)),
+        CJSON_STRING => item_borrow.valuestring.clone(),
+        CJSON_ARRAY => {
+            let mut result = String::from("[");
+            let mut child = item_borrow.child.clone();
+            while let Some(current) = child {
+                if let Some(rendered) = cjson_print(&current) {
+                    result.push_str(&rendered);
+                    child = current.borrow().next.clone();
+                    if child.is_some() {
+                        result.push_str(", ");
+                    }
+                } else {
+                    return None;
+                }
+            }
+            result.push(']');
+            Some(result)
+        }
+        CJSON_OBJECT => {
+            let mut result = String::from("{");
+            let mut child = item_borrow.child.clone();
+            while let Some(current) = child {
+                let current_borrow = current.borrow();
+                if let Some(key) = &current_borrow.string {
+                    if let Some(rendered) = cjson_print(&current) {
+                        result.push_str(&format!("\"{}\": {}", key, rendered));
+                        child = current_borrow.next.clone();
+                        if child.is_some() {
+                            result.push_str(", ");
+                        }
+                    } else {
+                        return None;
+                    }
+                } else {
+                    return None;
+                }
+            }
+            result.push('}');
+            Some(result)
+        }
+        _ => None,
+    }
+}
 
 
 pub fn cjson_delete(item: Option<Rc<RefCell<CJSON>>>) {
