@@ -410,7 +410,8 @@ fn add_item_to_object(
     cjson_add_item_to_array(object, item)
 }
 */
-    
+
+    /*
 fn add_item_to_object(
     object: &Rc<RefCell<CJSON>>,
     key: &str,
@@ -464,6 +465,63 @@ fn add_item_to_object(
 
     true
 }
+*/
+
+fn add_item_to_object(
+    object: &Rc<RefCell<CJSON>>,
+    key: &str,
+    item: Rc<RefCell<CJSON>>,
+    constant_key: bool,
+) -> bool {
+    if Rc::ptr_eq(&object, &item) || key.is_empty() || object.borrow().item_type != CJSON_OBJECT {
+        return false;
+    }
+
+    let new_key = if constant_key {
+        key.to_string()
+    } else {
+        key.to_owned()
+    };
+
+    {
+        let mut item_mut = item.borrow_mut();
+        let new_type = if constant_key {
+            item_mut.item_type | CJSON_STRING_IS_CONST
+        } else {
+            item_mut.item_type & !CJSON_STRING_IS_CONST
+        };
+
+        if (item_mut.item_type & CJSON_STRING_IS_CONST) == 0 {
+            item_mut.string = None;
+        }
+
+        item_mut.string = Some(new_key);
+        item_mut.item_type = new_type;
+    }
+
+    {
+        let mut object_mut = object.borrow_mut();
+
+        if object_mut.child.is_none() {
+            object_mut.child = Some(Rc::clone(&item));
+        } else {
+            let mut last = Rc::clone(object_mut.child.as_ref().unwrap());
+            loop {
+                let next = last.borrow().next.clone();
+                if let Some(next_child) = next {
+                    last = next_child;
+                } else {
+                    break;
+                }
+            }
+            last.borrow_mut().next = Some(Rc::clone(&item));
+            item.borrow_mut().prev = Some(last);
+        }
+    }
+
+    true
+}
+
 
 
 pub fn cjson_add_item_to_object(
