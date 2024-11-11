@@ -734,6 +734,17 @@ fn print_object(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> b
     true
 }
 
+fn print_string(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bool {
+    let item_borrow = item.borrow();
+
+    // Check if the valuestring is present
+    if let Some(valuestring) = &item_borrow.valuestring {
+        print_string_ptr(valuestring, output_buffer)
+    } else {
+        false
+    }
+}
+
 
 fn print_value(item: &Rc<RefCell<CJSON>>, output_buffer: &mut PrintBuffer) -> bool {
     if item.borrow().item_type == CJSON_INVALID || output_buffer.buffer.is_empty() {
