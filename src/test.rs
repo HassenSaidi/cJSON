@@ -45,7 +45,7 @@ fn print_preallocated(root: &Rc<RefCell<CJSON>>) -> Result<(), String> {
     let mut buf_fail = String::with_capacity(len_fail);
 
     // Attempt to print into the buffer with extra capacity
-    if !cjson_print_preallocated(root, &mut buf, len as i32, true) {
+    if !cjson_print_preallocated(root, &mut buf, (len as i32).try_into().unwrap(), true) {
         println!("cJSON_PrintPreallocated failed!");
 
         if out != buf {
@@ -61,7 +61,7 @@ fn print_preallocated(root: &Rc<RefCell<CJSON>>) -> Result<(), String> {
     println!("{}", buf);
 
     // Force a failure by using the smaller buffer
-    if cjson_print_preallocated(root, &mut buf_fail, len_fail as i32, true) {
+    if cjson_print_preallocated(root, &mut buf_fail, (len as i32).try_into().unwrap(), true) {
         println!("cJSON_PrintPreallocated did not fail with insufficient buffer size!");
         println!("cJSON_Print result:\n{}", out);
         println!("cJSON_PrintPreallocated result:\n{}", buf_fail);
