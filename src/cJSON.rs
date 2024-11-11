@@ -400,6 +400,15 @@ fn add_item_to_object(
     cjson_add_item_to_array(object, item)
 }
 
+pub fn cjson_add_item_to_object(
+    object: &Rc<RefCell<CJSON>>,
+    key: &str,
+    item: Rc<RefCell<CJSON>>,
+) -> bool {
+    add_item_to_object(object, key, item, false)
+}
+
+
 pub fn cjson_delete(item: Option<Rc<RefCell<CJSON>>>) {
     let mut current = item;
 
