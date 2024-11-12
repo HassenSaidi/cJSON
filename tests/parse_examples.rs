@@ -23,7 +23,7 @@ fn do_test(test_name: &str) -> Result<(), String> {
 
     // Construct the paths for the test input and expected output files
     let test_path = format!("{}{}", TEST_DIR_PATH, test_name);
-    let expected_path = format!("{}{}.expected", TEST_DIR_PATH, test_name);
+    let expected_path = format!("{}{}", TEST_DIR_PATH, test_name);
 
     println!("Looking for expected file at: {:?}", expected_path);
 
