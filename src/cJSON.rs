@@ -1622,12 +1622,6 @@ mod tests {
         assert_eq!(size, (strings.len() as i32).try_into().unwrap());
     }
 
-    #[cfg(test)]
-mod tests {
-    use super::*;
-    use std::rc::Rc;
-    use std::cell::RefCell;
-
     #[test]
     fn test_print_null() {
         let item = cjson_create_null();
