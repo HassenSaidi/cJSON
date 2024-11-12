@@ -1236,7 +1236,7 @@ pub fn parse_object(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
     // Check for the end of the object '}'
     if input_buffer.cannot_access_at_index(0) || input_buffer.buffer_at_offset()[0] != b'}' {
         if let Some(head_item) = head {
-            cjson_delete(head_item);
+            cjson_delete(Some(head_item));
         }
         return false;
     }
@@ -1365,7 +1365,7 @@ pub fn parse_array(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
         input_buffer.skip_whitespace();
         if !parse_value(&mut new_item.borrow_mut(), input_buffer) {
             if let Some(head_item) = head {
-                cjson_delete(head_item);
+                cjson_delete(Some(head_item));
             }
             return false;
         }
@@ -1380,7 +1380,7 @@ pub fn parse_array(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
     // Check for the end of the array ']'
     if input_buffer.cannot_access_at_index(0) || input_buffer.buffer_at_offset()[0] != b']' {
         if let Some(head_item) = head {
-            cjson_delete(head_item);
+            cjson_delete(Some(head_item));
         }
         return false;
     }
