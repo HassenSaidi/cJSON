@@ -1523,7 +1523,8 @@ pub fn cjson_parse_with_length_opts(
     let item = cJSON_New_Item();
     
     // Skip UTF-8 BOM and whitespace, then parse the value
-    if !parse_value(&mut item.borrow_mut(), buffer.skip_whitespace()) {
+    buffer.skip_whitespace();
+    if !parse_value(&mut item.borrow_mut(), buffer) {
         return handle_parse_failure(item, value, &mut buffer, return_parse_end);
     }
 
