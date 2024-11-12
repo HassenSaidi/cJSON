@@ -19,7 +19,7 @@ lazy_static! {
     static ref GLOBAL_ERROR: Mutex<Error> = Mutex::new(Error::default());
 }
 
-pub fn cjson_get_error_ptr() -> Option<String> {
+pub fn cjson_get_error_ptr() -> Option<&str> {
     let error = GLOBAL_ERROR.lock().unwrap();
 
     if let Some(ref json) = error.json {
@@ -1453,7 +1453,7 @@ fn handle_parse_failure(
     buffer: &mut ParseBuffer,
     return_parse_end: Option<&mut usize>,
 ) -> Option<Rc<RefCell<CJSON>>> {
-    cjson_delete(item);
+    cjson_delete(Some(item));
 
     let mut local_error = Error {
         json: value.as_bytes(),
@@ -1471,7 +1471,7 @@ fn handle_parse_failure(
         *parse_end = local_error.position;
     }
 
-    global_error = local_error;
+    GLOBAL_ERROR = local_error;
     None
 }
 
@@ -1500,10 +1500,10 @@ pub fn cjson_parse_with_length_opts(
     }
 
     // Create a new CJSON item
-    let item = cJSON_New_Item()?;
+    let item = cJSON_New_Item();
     
     // Skip UTF-8 BOM and whitespace, then parse the value
-    if !parse_value(&mut item.borrow_mut(), buffer.skip_whitespace(skip_utf8_bom(&mut buffer)?)) {
+    if !parse_value(&mut item.borrow_mut(), buffer.skip_whitespace()) {
         return handle_parse_failure(item, value, &mut buffer, return_parse_end);
     }
 
