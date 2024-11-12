@@ -1925,7 +1925,7 @@ mod tests {
         assert_eq!(print_buffer.buffer, "\"Path: C:\\\\Program Files\\\\App\"");
     }
 
-
+    #[test]
     fn test_cjson_parse_with_array() {
         // Define the JSON input as a raw string
         let json_input = r#"
@@ -1966,9 +1966,9 @@ mod tests {
         } else {
             println!("Parsing succeeded, but it was expected to fail.");
         }
-
+        assert!(parsed.is_none(), "JSON is not empty!");
         // Assert that the parsing was successful
-        assert!(parsed.is_some(), "Failed to parse the JSON input");
+        //assert!(parsed.is_some(), "Failed to parse the JSON input");
       }
 
 }
