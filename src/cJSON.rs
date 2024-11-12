@@ -1507,7 +1507,7 @@ pub fn cjson_parse_with_length_opts(
         content: value.as_bytes().to_vec(),
         length: buffer_length,
         offset: 0,
-        depth: 0,
+        depth: value.len(),
     };
 
     // Reset the global error
