@@ -1957,6 +1957,17 @@ mod tests {
         // Parse the JSON input
         let parsed = cjson_parse(json_input);
 
+        if parsed.is_none() {
+            // Retrieve the error pointer using `cjson_get_error_ptr`
+            if let Some(error_ptr) = cjson_get_error_ptr() {
+                println!("Parsing failed at: {}", error_ptr);
+            } else {
+                println!("Parsing failed, but no error pointer was set.");
+            }
+        } else {
+            println!("Parsing succeeded, but it was expected to fail.");
+        }
+
         // Assert that the parsing was successful
         assert!(parsed.is_some(), "Failed to parse the JSON input");
       }
