@@ -49,7 +49,17 @@ fn do_test(test_name: &str) -> Result<(), String> {
     }
 }
 
-// Helper function to read the content of a file
+pub fn parse_file(filename: &str) -> Option<Rc<RefCell<CJSON>>> {
+    // Read the content of the file
+    let content = read_file(filename).ok()?;
+
+    // Parse the JSON content
+    let parsed = cjson_parse(&content);
+
+    parsed
+}
+
+// Helper function to read the file's content
 fn read_file(filename: &str) -> io::Result<String> {
     let mut file = fs::File::open(filename)?;
     let mut content = String::new();
@@ -58,9 +68,14 @@ fn read_file(filename: &str) -> io::Result<String> {
 }
 
 // Helper function to parse a file (assumes `parse_file` function is implemented)
-fn parse_file(filename: &str) -> Option<Rc<RefCell<CJSON>>> {
+pub fn parse_file(filename: &str) -> Option<Rc<RefCell<CJSON>>> {
+    // Read the content of the file
     let content = read_file(filename).ok()?;
-    cjson_parse(&content)
+
+    // Parse the JSON content
+    let parsed = cjson_parse(&content);
+
+    parsed
 }
 
 #[cfg(test)]
@@ -95,8 +110,8 @@ mod tests {
 
     #[test]
     fn file_test6_should_not_be_parsed() {
-      // Read the content of "inputs/test6"
-      let test6 = read_file("test6").expect("Failed to read test6 data");
+      // Read the content of "test6"
+      let test6 = read_file("tests/inputs/test6").expect("Failed to read test6 data");
 
       // Attempt to parse the content
       let tree = cjson_parse(&test6);
