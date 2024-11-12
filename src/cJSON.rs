@@ -13,7 +13,10 @@ pub fn cjson_version() -> String {
     format!("{}.{}.{}", CJSON_VERSION_MAJOR, CJSON_VERSION_MINOR, CJSON_VERSION_PATCH)
 }
 
-
+pub struct ParseBuffer {
+    pub content: Vec<u8>, // The input JSON content as bytes
+    pub offset: usize,    // Current parsing offset
+}
 struct PrintBuffer<'a> {
     buffer: &'a mut String,
     length: usize,
