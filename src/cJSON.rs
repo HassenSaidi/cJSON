@@ -19,7 +19,7 @@ lazy_static! {
     static ref GLOBAL_ERROR: Mutex<Error> = Mutex::new(Error::default());
 }
 
-pub fn cjson_get_error_ptr() -> Option<&str> {
+pub fn cjson_get_error_ptr() -> Option<&'static str> {
     let error = GLOBAL_ERROR.lock().unwrap();
 
     if let Some(ref json) = error.json {
@@ -38,9 +38,9 @@ fn reset_global_error() {
     error.position = 0;
 }
 
-fn set_global_error(json: &[u8], position: usize) {
+fn set_global_error(value: &[u8], position: usize) {
     let mut error = GLOBAL_ERROR.lock().unwrap();
-    error.json = Some(json.to_vec());
+    error.json = Some(value.to_vec());
     error.position = position;
 }
 
@@ -1471,7 +1471,11 @@ fn handle_parse_failure(
         *parse_end = local_error.position;
     }
 
-    GLOBAL_ERROR = local_error;
+    {
+    let mut global_error = GLOBAL_ERROR.lock().unwrap();
+        *global_error = local_error;
+    }
+
     None
 }
 
