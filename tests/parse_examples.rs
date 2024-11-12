@@ -61,28 +61,28 @@ mod tests {
 
     #[test]
     fn file_test1_should_be_parsed_and_printed() {
-        do_test("test1").expect("Test 'example_1' failed");
+        do_test("test1").expect("Test 'test_1' failed");
     }
   
     #[test]
     fn file_test2_should_be_parsed_and_printed() {
-        do_test("test2").expect("Test 'example_1' failed");
+        do_test("test2").expect("Test 'test_2' failed");
     }
 
   
     #[test]
     fn file_test3_should_be_parsed_and_printed() {
-        do_test("test3").expect("Test 'example_1' failed");
+        do_test("test3").expect("Test 'test_3' failed");
     }
   
     #[test]
     fn file_test4_should_be_parsed_and_printed() {
-        do_test("test4").expect("Test 'example_1' failed");
+        do_test("test4").expect("Test 'test_4' failed");
     }
   
     #[test]
     fn file_test5_should_be_parsed_and_printed() {
-        do_test("test5").expect("Test 'example_1' failed");
+        do_test("test5").expect("Test 'test_5' failed");
     }
 
     #[test]
@@ -104,23 +104,23 @@ mod tests {
     
     #[test]
     fn file_test7_should_be_parsed_and_printed() {
-        do_test("test7").expect("Test 'example_1' failed");
+        do_test("test7").expect("Test 'test_7' failed");
     }
     #[test]
     fn file_test8_should_be_parsed_and_printed() {
-        do_test("test8").expect("Test 'example_1' failed");
+        do_test("test8").expect("Test 'test_8' failed");
     }
     #[test]
     fn file_test9_should_be_parsed_and_printed() {
-        do_test("test9").expect("Test 'example_1' failed");
+        do_test("test9").expect("Test 'test_9' failed");
     }
     #[test]
     fn file_test10_should_be_parsed_and_printed() {
-        do_test("test10").expect("Test 'example_1' failed");
+        do_test("test10").expect("Test 'test_10' failed");
     }
     #[test]
     fn file_test11_should_be_parsed_and_printed() {
-        do_test("test11").expect("Test 'example_1' failed");
+        do_test("test11").expect("Test 'test_11' failed");
     }
 
     #[test]
