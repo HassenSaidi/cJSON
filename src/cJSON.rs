@@ -1966,6 +1966,11 @@ mod tests {
         } else {
             println!("Parsing succeeded, but it was expected to fail.");
         }
+        if parsed.is_none() {
+            // Retrieve the error pointer using `cjson_get_error_ptr`
+            let error_ptr = cjson_get_error_ptr().unwrap_or_else(|| "No error pointer set".to_string());
+            panic!("Parsing failed. Error pointer: {}", error_ptr);
+        }
         assert!(parsed.is_none(), "JSON is not empty!");
         // Assert that the parsing was successful
         //assert!(parsed.is_some(), "Failed to parse the JSON input");
