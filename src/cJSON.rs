@@ -9,7 +9,7 @@ const CJSON_VERSION_MAJOR: u32 = 1;
 const CJSON_VERSION_MINOR: u32 = 7;
 const CJSON_VERSION_PATCH: u32 = 15;
 
-const CJSON_NESTING_LIMIT: u32 = 1000;
+const CJSON_NESTING_LIMIT: usize = 1000;
 
 pub fn cjson_version() -> String {
     format!("{}.{}.{}", CJSON_VERSION_MAJOR, CJSON_VERSION_MINOR, CJSON_VERSION_PATCH)
