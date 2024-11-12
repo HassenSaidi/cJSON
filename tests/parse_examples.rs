@@ -14,7 +14,7 @@ use cjson::cJSON::cjson_delete;
 
 fn do_test(test_name: &str) -> Result<(), String> {
     // Define the base directory for the test files
-    const TEST_DIR_PATH: &str = "inputs/";
+    const TEST_DIR_PATH: &str = "tests/inputs/";
 
     // Construct the paths for the test input and expected output files
     let test_path = format!("{}{}", TEST_DIR_PATH, test_name);
