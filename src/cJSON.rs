@@ -1524,7 +1524,7 @@ pub fn cjson_parse_with_length_opts(
     
     // Skip UTF-8 BOM and whitespace, then parse the value
     buffer.skip_whitespace();
-    if !parse_value(&mut item.borrow_mut(), buffer) {
+    if !parse_value(&mut item.borrow_mut(), &mut buffer) {
         return handle_parse_failure(item, value, &mut buffer, return_parse_end);
     }
 
