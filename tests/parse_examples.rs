@@ -173,7 +173,7 @@ mod tests {
 
       // Clean up the parsed JSON tree
       if let Some(tree) = tree {
-          cjson_delete(tree);
+          cjson_delete(Some(tree));
       }
     }
 
@@ -207,7 +207,7 @@ mod tests {
 
       // Clean up if the tree was incorrectly parsed
       if let Some(tree) = tree {
-          cjson_delete(tree);
+          cjson_delete(Some(tree));
       }
     }
 
