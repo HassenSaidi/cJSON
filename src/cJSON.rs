@@ -963,6 +963,93 @@ pub fn parse_number(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
     true
 }
 
+pub fn parse_hex4(input: &[u8]) -> Option<u32> {
+    if input.len() < 4 {
+        return None; // Ensure the input has at least 4 characters
+    }
+
+    let mut h: u32 = 0;
+
+    for i in 0..4 {
+        h <<= 4; // Shift left by 4 bits (equivalent to multiplying by 16)
+
+        // Parse the current hexadecimal digit
+        match input[i] {
+            b'0'..=b'9' => h += (input[i] - b'0') as u32,
+            b'A'..=b'F' => h += (input[i] - b'A' + 10) as u32,
+            b'a'..=b'f' => h += (input[i] - b'a' + 10) as u32,
+            _ => return None, // Invalid character, return None
+        }
+    }
+
+    Some(h)
+}
+
+pub fn utf16_literal_to_utf8(
+    input_pointer: &[u8],
+    input_end: &[u8],
+    output_pointer: &mut Vec<u8>,
+) -> Option<usize> {
+    if input_pointer.len() < 6 || input_end.len() < 6 {
+        return None; // Input ends unexpectedly
+    }
+
+    // Parse the first UTF-16 sequence
+    let first_code = parse_hex4(&input_pointer[2..6])?;
+    let mut codepoint: u32;
+    let mut sequence_length: usize;
+
+    // Check for valid UTF-16 surrogate pair
+    if (0xDC00..=0xDFFF).contains(&first_code) {
+        return None;
+    }
+
+    // Handle UTF-16 surrogate pair
+    if (0xD800..=0xDBFF).contains(&first_code) {
+        if input_pointer.len() < 12 || &input_pointer[6..8] != b"\\u" {
+            return None; // Missing second half of the surrogate pair
+        }
+
+        // Parse the second UTF-16 sequence
+        let second_code = parse_hex4(&input_pointer[8..12])?;
+        if !(0xDC00..=0xDFFF).contains(&second_code) {
+            return None; // Invalid second half of the surrogate pair
+        }
+
+        // Calculate the Unicode codepoint from the surrogate pair
+        codepoint = 0x10000 + (((first_code & 0x3FF) << 10) | (second_code & 0x3FF));
+        sequence_length = 12; // \uXXXX\uXXXX
+    } else {
+        // Single UTF-16 sequence
+        codepoint = first_code;
+        sequence_length = 6; // \uXXXX
+    }
+
+    // Determine the UTF-8 length and encode the codepoint
+    let utf8_length = if codepoint < 0x80 {
+        output_pointer.push(codepoint as u8);
+        1
+    } else if codepoint < 0x800 {
+        output_pointer.push((0xC0 | (codepoint >> 6)) as u8);
+        output_pointer.push((0x80 | (codepoint & 0x3F)) as u8);
+        2
+    } else if codepoint < 0x10000 {
+        output_pointer.push((0xE0 | (codepoint >> 12)) as u8);
+        output_pointer.push((0x80 | ((codepoint >> 6) & 0x3F)) as u8);
+        output_pointer.push((0x80 | (codepoint & 0x3F)) as u8);
+        3
+    } else if codepoint <= 0x10FFFF {
+        output_pointer.push((0xF0 | (codepoint >> 18)) as u8);
+        output_pointer.push((0x80 | ((codepoint >> 12) & 0x3F)) as u8);
+        output_pointer.push((0x80 | ((codepoint >> 6) & 0x3F)) as u8);
+        output_pointer.push((0x80 | (codepoint & 0x3F)) as u8);
+        4
+    } else {
+        return None; // Invalid Unicode codepoint
+    };
+
+    Some(sequence_length)
+}
 
 /*
 pub fn cjson_parse_with_opts(
