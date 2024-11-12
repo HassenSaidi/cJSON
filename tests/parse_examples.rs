@@ -9,8 +9,13 @@ use cjson::cJSON::cjson_parse;
 use cjson::cJSON::cjson_get_error_ptr;
 use cjson::cJSON::cjson_parse_with_length;
 use cjson::cJSON::cjson_delete;
+use std::path::PathBuf;
 
 
+fn get_test_file_path(filename: &str) -> PathBuf {
+    let project_root = env!("CARGO_MANIFEST_DIR");
+    PathBuf::from(project_root).join("tests/inputs").join(filename)
+}
 
 fn do_test(test_name: &str) -> Result<(), String> {
     // Define the base directory for the test files
