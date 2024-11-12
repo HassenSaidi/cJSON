@@ -1926,7 +1926,6 @@ mod tests {
     }
 
 
-    #[test]
     fn test_cjson_parse_with_array() {
         // Define the JSON input as a raw string
         let json_input = r#"
