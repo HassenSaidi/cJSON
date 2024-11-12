@@ -1,5 +1,9 @@
 use std::rc::Rc;
 use std::cell::RefCell;
+use std::f64;
+use std::i32;
+use std::str::FromStr;
+
 
 const CJSON_VERSION_MAJOR: u32 = 1;
 const CJSON_VERSION_MINOR: u32 = 7;
@@ -8,6 +12,7 @@ const CJSON_VERSION_PATCH: u32 = 15;
 pub fn cjson_version() -> String {
     format!("{}.{}.{}", CJSON_VERSION_MAJOR, CJSON_VERSION_MINOR, CJSON_VERSION_PATCH)
 }
+
 
 struct PrintBuffer<'a> {
     buffer: &'a mut String,
@@ -885,6 +890,106 @@ pub fn cjson_delete(item: Option<Rc<RefCell<CJSON>>>) {
     }
 }
 
+/* 
+
+Parse
+
+*/
+
+fn get_decimal_point() -> char {
+    '.' // Placeholder: Use locale-specific logic if needed
+}
+
+impl ParseBuffer {
+    pub fn can_access_at_index(&self, index: usize) -> bool {
+        self.offset + index < self.content.len()
+    }
+
+    pub fn buffer_at_offset(&self) -> &[u8] {
+        &self.content[self.offset..]
+    }
+}
+
+pub fn parse_number(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
+    let mut number_c_string = String::with_capacity(64);
+    let decimal_point = get_decimal_point();
+    let mut i = 0;
+
+    // Check if the input buffer is valid
+    if input_buffer.content.is_empty() {
+        return false;
+    }
+
+    // Copy the number into a temporary buffer, replacing '.' with the locale-specific decimal point
+    while i < 63 && input_buffer.can_access_at_index(i) {
+        let current_char = input_buffer.buffer_at_offset()[i];
+        match current_char {
+            b'0'..=b'9' | b'+' | b'-' | b'e' | b'E' => {
+                number_c_string.push(current_char as char);
+            }
+            b'.' => {
+                number_c_string.push(decimal_point);
+            }
+            _ => break,
+        }
+        i += 1;
+    }
+
+    // Attempt to parse the number from the string
+    let number = match f64::from_str(&number_c_string) {
+        Ok(num) => num,
+        Err(_) => return false, // parse_error
+    };
+
+    item.valuedouble = number;
+
+    // Handle integer overflow and underflow with saturation
+    item.valueint = if number >= i32::MAX as f64 {
+        i32::MAX
+    } else if number <= i32::MIN as f64 {
+        i32::MIN
+    } else {
+        number as i32
+    };
+
+    // Set the item type to CJSON_NUMBER
+    item.item_type = CJSON_NUMBER;
+
+    // Update the input buffer offset
+    input_buffer.offset += i;
+    true
+}
+
+
+/*
+pub fn cjson_parse_with_opts(
+    value: &str,
+    return_parse_end: Option<&mut usize>,
+    require_null_terminated: bool,
+) -> Option<Rc<RefCell<CJSON>>> {
+    // Check if the input value is `None` (equivalent to NULL in C)
+    if value.is_empty() {
+        return None;
+    }
+
+    // Calculate the buffer length, accounting for null-terminated requirement
+    let buffer_length = value.len() + if require_null_terminated { 1 } else { 0 };
+
+    // Delegate to `cjson_parse_with_length_opts`
+    cjson_parse_with_length_opts(value, buffer_length, return_parse_end, require_null_terminated)
+}
+
+
+pub fn cjson_parse(value: &str) -> Option<Rc<RefCell<CJSON>>> {
+    cjson_parse_with_opts(value, None, false)
+}
+
+*/
+
+
+/*
+Unit Tests
+*/
 
 #[cfg(test)]
 mod tests {
