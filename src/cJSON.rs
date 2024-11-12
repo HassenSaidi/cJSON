@@ -1925,6 +1925,38 @@ mod tests {
         assert_eq!(print_buffer.buffer, "\"Path: C:\\\\Program Files\\\\App\"");
     }
 
+    #[test]
+    fn test_parse_string_basic() {
+        // Define a valid JSON string input
+        let json_input = "\"Hello, world!\"";
+        let mut item = CJSON {
+            next: None,
+            prev: None,
+            child: None,
+            item_type: 0,
+            valuestring: None,
+            valueint: 0,
+            valuedouble: 0.0,
+            string: None,
+        };
+        let mut input_buffer = ParseBuffer {
+            content: json_input.as_bytes().to_vec(),
+            offset: 0,
+            depth: 0,
+        };
+
+        // Attempt to parse the JSON string
+        let result = parse_string(&mut item, &mut input_buffer);
+
+        // Assert that parsing was successful
+        assert!(result, "Failed to parse valid JSON string");
+
+        // Check the parsed string value
+        assert_eq!(item.valuestring, Some("Hello, world!".to_string()));
+
+        // Check the item type
+        assert_eq!(item.item_type, CJSON_STRING, "Item type should be CJSON_STRING");
+    }
     
     fn test_cjson_parse_with_array() {
         // Define the JSON input as a raw string
