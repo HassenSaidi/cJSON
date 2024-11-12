@@ -1181,10 +1181,7 @@ pub fn parse_object(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
     loop {
         // Allocate a new item
         let new_item = cJSON_New_Item();
-        if new_item.is_none() {
-            return false;
-        }
-        let new_item = new_item.unwrap();
+        
 
         // Attach the new item to the linked list
         if head.is_none() {
@@ -1341,10 +1338,6 @@ pub fn parse_array(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
     loop {
         // Allocate a new item
         let new_item = cJSON_New_Item();
-        if new_item.is_none() {
-            return false;
-        }
-        let new_item = new_item.unwrap();
 
         // Attach the new item to the linked list
         if head.is_none() {
