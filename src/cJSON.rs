@@ -904,12 +904,22 @@ fn get_decimal_point() -> char {
 }
 
 impl ParseBuffer {
+    pub fn cannot_access_at_index(&self, index: usize) -> bool {
+        self.offset + index >= self.content.len()
+    }
+
     pub fn can_access_at_index(&self, index: usize) -> bool {
         self.offset + index < self.content.len()
     }
 
     pub fn buffer_at_offset(&self) -> &[u8] {
         &self.content[self.offset..]
+    }
+
+    pub fn skip_whitespace(&mut self) {
+        while self.can_access_at_index(0) && self.buffer_at_offset()[0].is_ascii_whitespace() {
+            self.offset += 1;
+        }
     }
 }
 
@@ -1127,6 +1137,201 @@ pub fn parse_string(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
 
     // Update the input buffer offset
     input_buffer.offset += input_end.len() + 1;
+    true
+}
+
+
+pub fn parse_object(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
+    let mut head: Option<Rc<RefCell<CJSON>>> = None;
+    let mut current_item: Option<Rc<RefCell<CJSON>>> = None;
+
+    // Check for nesting limit
+    if input_buffer.depth >= CJSON_NESTING_LIMIT {
+        return false;
+    }
+    input_buffer.depth += 1;
+
+    // Check if the input starts with '{'
+    if input_buffer.cannot_access_at_index(0) || input_buffer.buffer_at_offset()[0] != b'{' {
+        return false;
+    }
+
+    input_buffer.offset += 1;
+    input_buffer.skip_whitespace();
+
+    // Check for an empty object
+    if input_buffer.can_access_at_index(0) && input_buffer.buffer_at_offset()[0] == b'}' {
+        input_buffer.depth -= 1;
+        item.item_type = CJSON_OBJECT;
+        return true;
+    }
+
+    // Step back to the character before the first element
+    input_buffer.offset -= 1;
+
+    // Loop through the comma-separated elements
+    loop {
+        // Allocate a new item
+        let new_item = cjson_new_item();
+        if new_item.is_none() {
+            return false;
+        }
+        let new_item = new_item.unwrap();
+
+        // Attach the new item to the linked list
+        if head.is_none() {
+            // Start the linked list
+            current_item = Some(Rc::clone(&new_item));
+            head = Some(Rc::clone(&new_item));
+        } else {
+            // Add to the end and advance
+            if let Some(ref mut current) = current_item {
+                current.borrow_mut().next = Some(Rc::clone(&new_item));
+                new_item.borrow_mut().prev = Some(Rc::clone(current));
+            }
+            current_item = Some(Rc::clone(&new_item));
+        }
+
+        // Parse the name of the child (key)
+        input_buffer.offset += 1;
+        input_buffer.skip_whitespace();
+        if !parse_string(&mut new_item.borrow_mut(), input_buffer) {
+            return false;
+        }
+        input_buffer.skip_whitespace();
+
+        // Swap `valuestring` and `string` fields
+        {
+            let mut new_item_mut = new_item.borrow_mut();
+            new_item_mut.string = new_item_mut.valuestring.take();
+        }
+
+        // Check for the colon ':' separator
+        if input_buffer.cannot_access_at_index(0) || input_buffer.buffer_at_offset()[0] != b':' {
+            return false;
+        }
+
+        // Parse the value
+        input_buffer.offset += 1;
+        input_buffer.skip_whitespace();
+        if !parse_value(&mut new_item.borrow_mut(), input_buffer) {
+            return false;
+        }
+        input_buffer.skip_whitespace();
+
+        // Check if the next character is a comma or the end of the object
+        if !input_buffer.can_access_at_index(0) || input_buffer.buffer_at_offset()[0] != b',' {
+            break;
+        }
+    }
+
+    // Check for the end of the object '}'
+    if input_buffer.cannot_access_at_index(0) || input_buffer.buffer_at_offset()[0] != b'}' {
+        if let Some(head_item) = head {
+            cjson_delete(head_item);
+        }
+        return false;
+    }
+
+    // Update the CJSON item
+    input_buffer.depth -= 1;
+    if let Some(head_item) = head.clone() {
+        head_item.borrow_mut().prev = current_item.clone();
+    }
+
+    item.item_type = CJSON_OBJECT;
+    item.child = head;
+
+    input_buffer.offset += 1;
+    true
+}
+
+pub fn parse_array(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
+    let mut head: Option<Rc<RefCell<CJSON>>> = None;
+    let mut current_item: Option<Rc<RefCell<CJSON>>> = None;
+
+    // Check for nesting limit
+    if input_buffer.depth >= CJSON_NESTING_LIMIT {
+        return false;
+    }
+    input_buffer.depth += 1;
+
+    // Check if the input starts with '['
+    if input_buffer.buffer_at_offset().first() != Some(&b'[') {
+        return false;
+    }
+
+    input_buffer.offset += 1;
+    input_buffer.skip_whitespace();
+
+    // Check for an empty array
+    if input_buffer.can_access_at_index(0) && input_buffer.buffer_at_offset()[0] == b']' {
+        input_buffer.depth -= 1;
+        item.item_type = CJSON_ARRAY;
+        return true;
+    }
+
+    // Step back to the character before the first element
+    input_buffer.offset -= 1;
+
+    // Loop through the comma-separated elements
+    loop {
+        // Allocate a new item
+        let new_item = cjson_new_item();
+        if new_item.is_none() {
+            return false;
+        }
+        let new_item = new_item.unwrap();
+
+        // Attach the new item to the linked list
+        if head.is_none() {
+            // Start the linked list
+            current_item = Some(Rc::clone(&new_item));
+            head = Some(Rc::clone(&new_item));
+        } else {
+            // Add to the end and advance
+            if let Some(ref mut current) = current_item {
+                current.borrow_mut().next = Some(Rc::clone(&new_item));
+                new_item.borrow_mut().prev = Some(Rc::clone(current));
+            }
+            current_item = Some(Rc::clone(&new_item));
+        }
+
+        // Parse the next value
+        input_buffer.offset += 1;
+        input_buffer.skip_whitespace();
+        if !parse_value(&mut new_item.borrow_mut(), input_buffer) {
+            if let Some(head_item) = head {
+                cjson_delete(head_item);
+            }
+            return false;
+        }
+        input_buffer.skip_whitespace();
+
+        // Check if the next character is a comma or the end of the array
+        if !input_buffer.can_access_at_index(0) || input_buffer.buffer_at_offset()[0] != b',' {
+            break;
+        }
+    }
+
+    // Check for the end of the array ']'
+    if input_buffer.cannot_access_at_index(0) || input_buffer.buffer_at_offset()[0] != b']' {
+        if let Some(head_item) = head {
+            cjson_delete(head_item);
+        }
+        return false;
+    }
+
+    // Update the CJSON item
+    input_buffer.depth -= 1;
+    if let Some(head_item) = head.clone() {
+        head_item.borrow_mut().prev = current_item.clone();
+    }
+
+    item.item_type = CJSON_ARRAY;
+    item.child = head;
+
+    input_buffer.offset += 1;
     true
 }
 
