@@ -49,15 +49,6 @@ fn do_test(test_name: &str) -> Result<(), String> {
     }
 }
 
-pub fn parse_file(filename: &str) -> Option<Rc<RefCell<CJSON>>> {
-    // Read the content of the file
-    let content = read_file(filename).ok()?;
-
-    // Parse the JSON content
-    let parsed = cjson_parse(&content);
-
-    parsed
-}
 
 // Helper function to read the file's content
 fn read_file(filename: &str) -> io::Result<String> {
