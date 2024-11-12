@@ -1447,6 +1447,35 @@ pub fn skip_utf8_bom(buffer: &mut ParseBuffer) -> Option<&mut ParseBuffer> {
     Some(buffer)
 }
 
+fn handle_parse_failure(
+    item: Rc<RefCell<CJSON>>,
+    value: &str,
+    buffer: &mut ParseBuffer,
+    return_parse_end: Option<&mut usize>,
+) -> Option<Rc<RefCell<CJSON>>> {
+    cjson_delete(item);
+
+    let mut local_error = Error {
+        json: value.as_bytes(),
+        position: if buffer.offset < buffer.length {
+            buffer.offset
+        } else if buffer.length > 0 {
+            buffer.length - 1
+        } else {
+            0
+        },
+    };
+
+    // Update `return_parse_end` if provided
+    if let Some(parse_end) = return_parse_end {
+        *parse_end = local_error.position;
+    }
+
+    global_error = local_error;
+    None
+}
+
+
 pub fn cjson_parse_with_length_opts(
     value: &str,
     buffer_length: usize,
