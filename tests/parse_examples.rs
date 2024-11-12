@@ -6,6 +6,10 @@ use std::path::Path;
 use cjson::cJSON::CJSON;
 use cjson::cJSON::cjson_print;
 use cjson::cJSON::cjson_parse;
+use cjson::cJSON::cjson_get_error_ptr;
+use cjson::cJSON::cjson_parse_with_length;
+use cjson::cJSON::cjson_delete;
+
 
 
 fn do_test(test_name: &str) -> Result<(), String> {
