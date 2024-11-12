@@ -1051,6 +1051,85 @@ pub fn utf16_literal_to_utf8(
     Some(sequence_length)
 }
 
+pub fn parse_string(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
+    // Check if the input starts with a double-quote
+    if input_buffer.buffer_at_offset().first() != Some(&b'\"') {
+        return false;
+    }
+
+    let mut input_pointer = &input_buffer.buffer_at_offset()[1..];
+    let mut input_end = input_pointer;
+    let mut skipped_bytes = 0;
+
+    // Calculate the approximate size of the output (overestimate)
+    while input_end.len() > 0 && input_end[0] != b'\"' {
+        if input_end[0] == b'\\' {
+            if input_end.len() < 2 {
+                return false; // Prevent buffer overflow when the last character is a backslash
+            }
+            skipped_bytes += 1;
+            input_end = &input_end[1..];
+        }
+        input_end = &input_end[1..];
+    }
+
+    // Check for unexpected end of the string
+    if input_end.is_empty() || input_end[0] != b'\"' {
+        return false;
+    }
+
+    // Calculate the allocation length for the output string
+    let allocation_length = input_end.len() - skipped_bytes;
+    let mut output = Vec::with_capacity(allocation_length);
+
+    // Loop through the string literal
+    while input_pointer < input_end {
+        if input_pointer[0] != b'\\' {
+            // Copy regular characters
+            output.push(input_pointer[0]);
+            input_pointer = &input_pointer[1..];
+        } else {
+            // Handle escape sequences
+            if input_pointer.len() < 2 {
+                return false;
+            }
+
+            match input_pointer[1] {
+                b'b' => output.push(b'\x08'), // Backspace
+                b'f' => output.push(b'\x0C'), // Formfeed
+                b'n' => output.push(b'\n'),   // Newline
+                b'r' => output.push(b'\r'),   // Carriage return
+                b't' => output.push(b'\t'),   // Tab
+                b'\"' | b'\\' | b'/' => output.push(input_pointer[1]),
+                b'u' => {
+                    // Handle UTF-16 escape sequence
+                    if let Some(sequence_length) = utf16_literal_to_utf8(input_pointer, input_end, &mut output) {
+                        input_pointer = &input_pointer[sequence_length..];
+                        continue;
+                    } else {
+                        return false; // Failed to convert UTF-16 literal to UTF-8
+                    }
+                }
+                _ => return false, // Invalid escape sequence
+            }
+            input_pointer = &input_pointer[2..];
+        }
+    }
+
+    // Convert output to a Rust string and set the CJSON item
+    match String::from_utf8(output) {
+        Ok(valuestring) => {
+            item.item_type = CJSON_STRING;
+            item.valuestring = Some(valuestring);
+        }
+        Err(_) => return false, // Invalid UTF-8 sequence
+    }
+
+    // Update the input buffer offset
+    input_buffer.offset += input_end.len() + 1;
+    true
+}
+
 /*
 pub fn cjson_parse_with_opts(
     value: &str,
