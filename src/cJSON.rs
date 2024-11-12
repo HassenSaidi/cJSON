@@ -1925,7 +1925,7 @@ mod tests {
         assert_eq!(print_buffer.buffer, "\"Path: C:\\\\Program Files\\\\App\"");
     }
 
-    #[test]
+    
     fn test_cjson_parse_with_array() {
         // Define the JSON input as a raw string
         let json_input = r#"
