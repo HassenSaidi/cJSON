@@ -3,7 +3,48 @@ use std::cell::RefCell;
 use std::f64;
 use std::i32;
 use std::str::FromStr;
+use std::sync::Mutex;
+use lazy_static::lazy_static;
 
+
+// Error handling 
+#[derive(Default, Debug)]
+pub struct Error {
+    pub json: Option<Vec<u8>>, // Use `Option<Vec<u8>>` to represent a nullable byte slice
+    pub position: usize,
+}
+
+lazy_static! {
+    // Define a global mutable error state using `Mutex` for thread safety
+    static ref global_error: Mutex<Error> = Mutex::new(Error::default());
+}
+
+pub fn cjson_get_error_ptr() -> Option<&str> {
+    let error = GLOBAL_ERROR.lock().unwrap();
+
+    if let Some(ref json) = error.json {
+        // Calculate the error position and return a slice from the JSON input
+        if error.position < json.len() {
+            return std::str::from_utf8(&json[error.position..]).ok();
+        }
+    }
+
+    None
+}
+
+fn reset_global_error() {
+    let mut error = GLOBAL_ERROR.lock().unwrap();
+    error.json = None;
+    error.position = 0;
+}
+
+fn set_global_error(json: &[u8], position: usize) {
+    let mut error = GLOBAL_ERROR.lock().unwrap();
+    error.json = Some(json.to_vec());
+    error.position = position;
+}
+
+// End Error handling 
 
 const CJSON_VERSION_MAJOR: u32 = 1;
 const CJSON_VERSION_MINOR: u32 = 7;
@@ -19,6 +60,7 @@ pub struct ParseBuffer {
     pub content: Vec<u8>, // The input JSON content as bytes
     pub offset: usize,    // Current parsing offset
     pub depth: usize,
+    pub length: usize,
 }
 struct PrintBuffer<'a> {
     buffer: &'a mut String,
