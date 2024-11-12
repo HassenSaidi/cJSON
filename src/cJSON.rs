@@ -1456,7 +1456,7 @@ fn handle_parse_failure(
     cjson_delete(Some(item));
 
     let mut local_error = Error {
-        json: value.as_bytes(),
+        json: Some(value.as_bytes().to_vec()),
         position: if buffer.offset < buffer.length {
             buffer.offset
         } else if buffer.length > 0 {
@@ -1495,8 +1495,11 @@ pub fn cjson_parse_with_length_opts(
     };
 
     // Reset the global error
-    set_global_error.json = None;
-    set_global_error.position = 0;
+    {
+    let mut global_error = GLOBAL_ERROR.lock().unwrap();
+    global_error.json = None;
+    global_error.position = 0;
+    }
 
     // Validate input
     if value.is_empty() || buffer_length == 0 {
