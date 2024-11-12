@@ -18,6 +18,7 @@ pub fn cjson_version() -> String {
 pub struct ParseBuffer {
     pub content: Vec<u8>, // The input JSON content as bytes
     pub offset: usize,    // Current parsing offset
+    pub depth: usize,
 }
 struct PrintBuffer<'a> {
     buffer: &'a mut String,
@@ -1179,7 +1180,7 @@ pub fn parse_object(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
     // Loop through the comma-separated elements
     loop {
         // Allocate a new item
-        let new_item = cjson_new_item();
+        let new_item = cJSON_New_Item();
         if new_item.is_none() {
             return false;
         }
@@ -1339,7 +1340,7 @@ pub fn parse_array(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
     // Loop through the comma-separated elements
     loop {
         // Allocate a new item
-        let new_item = cjson_new_item();
+        let new_item = cJSON_New_Item();
         if new_item.is_none() {
             return false;
         }
