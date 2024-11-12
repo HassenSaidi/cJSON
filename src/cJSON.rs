@@ -9,6 +9,8 @@ const CJSON_VERSION_MAJOR: u32 = 1;
 const CJSON_VERSION_MINOR: u32 = 7;
 const CJSON_VERSION_PATCH: u32 = 15;
 
+const CJSON_NESTING_LIMIT: u32 = 1000;
+
 pub fn cjson_version() -> String {
     format!("{}.{}.{}", CJSON_VERSION_MAJOR, CJSON_VERSION_MINOR, CJSON_VERSION_PATCH)
 }
@@ -921,6 +923,11 @@ impl ParseBuffer {
             self.offset += 1;
         }
     }
+
+    pub fn can_read(&self, length: usize) -> bool {
+        self.offset + length <= self.content.len()
+    }
+
 }
 
 pub fn parse_number(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
@@ -1244,6 +1251,61 @@ pub fn parse_object(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
 
     input_buffer.offset += 1;
     true
+}
+
+pub fn parse_value(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
+    // Check if the input buffer is valid
+    if input_buffer.content.is_empty() {
+        return false;
+    }
+
+    // Parse `null`
+    if input_buffer.can_read(4) && input_buffer.buffer_at_offset().starts_with(b"null") {
+        item.item_type = CJSON_NULL;
+        input_buffer.offset += 4;
+        return true;
+    }
+
+    // Parse `false`
+    if input_buffer.can_read(5) && input_buffer.buffer_at_offset().starts_with(b"false") {
+        item.item_type = CJSON_FALSE;
+        input_buffer.offset += 5;
+        return true;
+    }
+
+    // Parse `true`
+    if input_buffer.can_read(4) && input_buffer.buffer_at_offset().starts_with(b"true") {
+        item.item_type = CJSON_TRUE;
+        item.valueint = 1;
+        input_buffer.offset += 4;
+        return true;
+    }
+
+    // Parse a string
+    if input_buffer.can_access_at_index(0) && input_buffer.buffer_at_offset()[0] == b'\"' {
+        return parse_string(item, input_buffer);
+    }
+
+    // Parse a number
+    if input_buffer.can_access_at_index(0)
+        && (input_buffer.buffer_at_offset()[0] == b'-'
+            || (input_buffer.buffer_at_offset()[0] >= b'0' && input_buffer.buffer_at_offset()[0] <= b'9'))
+    {
+        return parse_number(item, input_buffer);
+    }
+
+    // Parse an array
+    if input_buffer.can_access_at_index(0) && input_buffer.buffer_at_offset()[0] == b'[' {
+        return parse_array(item, input_buffer);
+    }
+
+    // Parse an object
+    if input_buffer.can_access_at_index(0) && input_buffer.buffer_at_offset()[0] == b'{' {
+        return parse_object(item, input_buffer);
+    }
+
+    // If no matching type is found, return false
+    false
 }
 
 pub fn parse_array(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
