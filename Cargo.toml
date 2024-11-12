@@ -11,6 +11,10 @@ name = "cjson"
 path = "cjson-lib.rs"
 crate-type = ["staticlib", "rlib"]
 
+[dependencies]
+lazy_static = "1.5.0"
+
+
 [[bin]]
 name = "test_cjson"
 path = "src/test.rs"
