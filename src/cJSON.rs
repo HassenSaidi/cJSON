@@ -553,6 +553,31 @@ pub fn cjson_print_preallocated(
     length: usize,
     format: bool,
 ) -> bool {
+    // Check for invalid length or an empty buffer
+    if length == 0 || buffer.capacity() < length {
+        return false;
+    }
+
+    // Initialize the print buffer
+    let mut p = PrintBuffer {
+        buffer,
+        length,
+        offset: 0,
+        noalloc: true,
+        format,
+    };
+
+    // Attempt to print the value into the buffer
+    print_value(item, &mut p)
+}
+
+/*
+pub fn cjson_print_preallocated(
+    item: &Rc<RefCell<CJSON>>,
+    buffer: &mut String,
+    length: usize,
+    format: bool,
+) -> bool {
     if length == 0 || buffer.is_empty() {
         return false;
     }
@@ -572,7 +597,8 @@ pub fn cjson_print_preallocated(
 
     print_value(item, &mut p)
 }
-
+*/
+    
 fn ensure_capacity(output_buffer: &mut PrintBuffer, required: usize) -> bool {
     let current_capacity = output_buffer.buffer.capacity();
     let needed_capacity = output_buffer.offset + required;
