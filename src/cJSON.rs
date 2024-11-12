@@ -1930,7 +1930,41 @@ mod tests {
         assert!(result);
         assert_eq!(print_buffer.buffer, "\"Path: C:\\\\Program Files\\\\App\"");
     }
-    
-}
+
+
+    #[test]
+    fn test_cjson_parse_with_array() {
+        // Define the JSON input as a raw string
+        let json_input = r#"
+        [
+            {
+                "precision": "zip",
+                "Latitude": 37.7668,
+                "Longitude": -122.3959,
+                "Address": "",
+                "City": "SAN FRANCISCO",
+                "State": "CA",
+                "Zip": "94107",
+                "Country": "US"
+            },
+            {
+                "precision": "zip",
+                "Latitude": 37.371991,
+                "Longitude": -122.026020,
+                "Address": "",
+                "City": "SUNNYVALE",
+                "State": "CA",
+                "Zip": "94085",
+                "Country": "US"
+            }
+        ]
+        "#;
+
+        // Parse the JSON input
+        let parsed = cjson_parse(json_input);
+
+        // Assert that the parsing was successful
+        assert!(parsed.is_some(), "Failed to parse the JSON input");
+      }
 
 }
