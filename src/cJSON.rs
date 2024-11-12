@@ -929,6 +929,12 @@ impl ParseBuffer {
         self.offset + length <= self.content.len()
     }
 
+    pub fn skip_whitespace(&mut self) {
+        while self.offset < self.length && self.content[self.offset].is_ascii_whitespace() {
+            self.offset += 1;
+        }
+    }
+
 }
 
 pub fn parse_number(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
@@ -1391,7 +1397,68 @@ pub fn parse_array(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
     true
 }
 
-/*
+pub fn skip_utf8_bom(buffer: &mut ParseBuffer) -> Option<&mut ParseBuffer> {
+    // Check if the buffer is valid and the offset is at the start (0)
+    if buffer.content.is_empty() || buffer.offset != 0 {
+        return None;
+    }
+
+    // Check for the UTF-8 BOM (`\xEF\xBB\xBF`)
+    if buffer.can_access_at_index(3) && buffer.buffer_at_offset().starts_with(b"\xEF\xBB\xBF") {
+        buffer.offset += 3;
+    }
+
+    Some(buffer)
+}
+
+pub fn cjson_parse_with_length_opts(
+    value: &str,
+    buffer_length: usize,
+    return_parse_end: Option<&mut usize>,
+    require_null_terminated: bool,
+) -> Option<Rc<RefCell<CJSON>>> {
+    // Initialize the parse buffer
+    let mut buffer = ParseBuffer {
+        content: value.as_bytes().to_vec(),
+        length: buffer_length,
+        offset: 0,
+        depth: 0,
+    };
+
+    // Reset the global error
+    global_error.json = None;
+    global_error.position = 0;
+
+    // Validate input
+    if value.is_empty() || buffer_length == 0 {
+        return None;
+    }
+
+    // Create a new CJSON item
+    let item = cjson_New_Item()?;
+    
+    // Skip UTF-8 BOM and whitespace, then parse the value
+    if !parse_value(&mut item.borrow_mut(), buffer.skip_whitespace(skip_utf8_bom(&mut buffer)?)) {
+        return handle_parse_failure(item, value, &mut buffer, return_parse_end);
+    }
+
+    // Check for null-terminated JSON if required
+    if require_null_terminated {
+        buffer.skip_whitespace();
+        if buffer.offset >= buffer.length || buffer.buffer_at_offset().get(0) != Some(&b'\0') {
+            return handle_parse_failure(item, value, &mut buffer, return_parse_end);
+        }
+    }
+
+    // Update `return_parse_end` if provided
+    if let Some(parse_end) = return_parse_end {
+        *parse_end = buffer.offset;
+    }
+
+    Some(item)
+}
+
+
 pub fn cjson_parse_with_opts(
     value: &str,
     return_parse_end: Option<&mut usize>,
@@ -1414,7 +1481,7 @@ pub fn cjson_parse(value: &str) -> Option<Rc<RefCell<CJSON>>> {
     cjson_parse_with_opts(value, None, false)
 }
 
-*/
+
 
 
 /*
