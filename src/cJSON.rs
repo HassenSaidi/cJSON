@@ -1956,7 +1956,7 @@ mod tests {
 
         // Parse the JSON input
         let parsed = cjson_parse(json_input);
-
+        
         if parsed.is_none() {
             // Retrieve the error pointer using `cjson_get_error_ptr`
             if let Some(error_ptr) = cjson_get_error_ptr() {
