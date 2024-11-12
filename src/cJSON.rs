@@ -16,10 +16,10 @@ pub struct Error {
 
 lazy_static! {
     // Define a global mutable error state using `Mutex` for thread safety
-    static ref global_error: Mutex<Error> = Mutex::new(Error::default());
+    static ref GLOBAL_ERROR: Mutex<Error> = Mutex::new(Error::default());
 }
 
-pub fn cjson_get_error_ptr() -> Option<&str> {
+pub fn cjson_get_error_ptr() -> Option<String> {
     let error = GLOBAL_ERROR.lock().unwrap();
 
     if let Some(ref json) = error.json {
@@ -961,12 +961,6 @@ impl ParseBuffer {
         &self.content[self.offset..]
     }
 
-    pub fn skip_whitespace(&mut self) {
-        while self.can_access_at_index(0) && self.buffer_at_offset()[0].is_ascii_whitespace() {
-            self.offset += 1;
-        }
-    }
-
     pub fn can_read(&self, length: usize) -> bool {
         self.offset + length <= self.content.len()
     }
@@ -1468,8 +1462,8 @@ pub fn cjson_parse_with_length_opts(
     };
 
     // Reset the global error
-    global_error.json = None;
-    global_error.position = 0;
+    set_global_error.json = None;
+    set_global_error.position = 0;
 
     // Validate input
     if value.is_empty() || buffer_length == 0 {
@@ -1477,7 +1471,7 @@ pub fn cjson_parse_with_length_opts(
     }
 
     // Create a new CJSON item
-    let item = cjson_New_Item()?;
+    let item = cJSON_New_Item()?;
     
     // Skip UTF-8 BOM and whitespace, then parse the value
     if !parse_value(&mut item.borrow_mut(), buffer.skip_whitespace(skip_utf8_bom(&mut buffer)?)) {
