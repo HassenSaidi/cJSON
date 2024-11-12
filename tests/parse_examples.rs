@@ -25,9 +25,12 @@ fn do_test(test_name: &str) -> Result<(), String> {
     let test_path = format!("{}{}", TEST_DIR_PATH, test_name);
     let expected_path = format!("{}{}.expected", TEST_DIR_PATH, test_name);
 
+    println!("Looking for expected file at: {:?}", expected_path);
+
     // Read the expected output
     let expected = read_file(&expected_path)
         .map_err(|e| format!("Failed to read expected output: {}", e))?;
+
 
     // Read and parse the test input
     let tree = parse_file(&test_path)
@@ -93,7 +96,7 @@ mod tests {
     #[test]
     fn file_test6_should_not_be_parsed() {
       // Read the content of "inputs/test6"
-      let test6 = read_file("inputs/test6").expect("Failed to read test6 data");
+      let test6 = read_file("test6").expect("Failed to read test6 data");
 
       // Attempt to parse the content
       let tree = cjson_parse(&test6);
