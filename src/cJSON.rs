@@ -1492,6 +1492,9 @@ fn handle_parse_failure(
     None
 }
 
+pub fn cjson_parse_with_length(value: &str, buffer_length: usize) -> Option<Rc<RefCell<CJSON>>> {
+    cjson_parse_with_length_opts(value, buffer_length, None, false)
+}
 
 pub fn cjson_parse_with_length_opts(
     value: &str,
