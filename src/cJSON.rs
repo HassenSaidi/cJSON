@@ -19,6 +19,19 @@ lazy_static! {
     static ref GLOBAL_ERROR: Mutex<Error> = Mutex::new(Error::default());
 }
 
+pub fn cjson_get_error_ptr() -> Option<String> {
+    let error = GLOBAL_ERROR.lock().unwrap();
+
+    if let Some(ref json) = error.json {
+        if error.position < json.len() {
+            // Return an owned `String` instead of a reference
+            return String::from_utf8(json[error.position..].to_vec()).ok();
+        }
+    }
+
+    None
+}
+/*
 pub fn cjson_get_error_ptr() -> Option<&'static str> {
     let error = GLOBAL_ERROR.lock().unwrap();
 
@@ -31,7 +44,7 @@ pub fn cjson_get_error_ptr() -> Option<&'static str> {
 
     None
 }
-
+*/
 fn reset_global_error() {
     let mut error = GLOBAL_ERROR.lock().unwrap();
     error.json = None;
