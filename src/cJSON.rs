@@ -1943,6 +1943,7 @@ mod tests {
             content: json_input.as_bytes().to_vec(),
             offset: 0,
             depth: 0,
+            length: 0,
         };
 
         // Attempt to parse the JSON string
