@@ -1125,83 +1125,75 @@ pub fn utf16_literal_to_utf8(
 }
 
 pub fn parse_string(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
+    //println!(
+    //    "Starting parse_string with input: {:?}",
+    //    input_buffer.buffer_at_offset()
+    //);
+
     // Check if the input starts with a double-quote
     if input_buffer.buffer_at_offset().first() != Some(&b'\"') {
+        println!("Input does not start with a double-quote.");
         return false;
     }
 
-    let mut input_pointer = &input_buffer.buffer_at_offset()[1..];
-    let mut input_end = input_pointer;
-    let mut skipped_bytes = 0;
+    println!("parsing string");
+    input_buffer.offset += 1; // Skip the opening quote
+    let mut output = Vec::new();
 
-    // Calculate the approximate size of the output (overestimate)
-    while input_end.len() > 0 && input_end[0] != b'\"' {
-        if input_end[0] == b'\\' {
-            if input_end.len() < 2 {
-                return false; // Prevent buffer overflow when the last character is a backslash
-            }
-            skipped_bytes += 1;
-            input_end = &input_end[1..];
-        }
-        input_end = &input_end[1..];
-    }
-
-    // Check for unexpected end of the string
-    if input_end.is_empty() || input_end[0] != b'\"' {
-        return false;
-    }
-
-    // Calculate the allocation length for the output string
-    let allocation_length = input_end.len() - skipped_bytes;
-    let mut output = Vec::with_capacity(allocation_length);
-
+    //println!("Input buffer offset: {:?}", input_buffer.offset);
+    //println!("Input buffer length: {:?}", input_buffer.length);
     // Loop through the string literal
-    while input_pointer < input_end {
-        if input_pointer[0] != b'\\' {
-            // Copy regular characters
-            output.push(input_pointer[0]);
-            input_pointer = &input_pointer[1..];
-        } else {
-            // Handle escape sequences
-            if input_pointer.len() < 2 {
-                return false;
-            }
+    while input_buffer.offset < input_buffer.length {
+        //println!("In loop");
+        let current_char = input_buffer.buffer_at_offset()[0];
 
-            match input_pointer[1] {
-                b'b' => output.push(b'\x08'), // Backspace
-                b'f' => output.push(b'\x0C'), // Formfeed
-                b'n' => output.push(b'\n'),   // Newline
-                b'r' => output.push(b'\r'),   // Carriage return
-                b't' => output.push(b'\t'),   // Tab
-                b'\"' | b'\\' | b'/' => output.push(input_pointer[1]),
-                b'u' => {
-                    // Handle UTF-16 escape sequence
-                    if let Some(sequence_length) = utf16_literal_to_utf8(input_pointer, input_end, &mut output) {
-                        input_pointer = &input_pointer[sequence_length..];
-                        continue;
-                    } else {
-                        return false; // Failed to convert UTF-16 literal to UTF-8
-                    }
+        /*
+            println!(
+                "input buffer: {:?} ",
+                String::from_utf8_lossy(&input_buffer.content)
+            );
+        */
+        // Check for the closing quote
+        if current_char == b'\"' {
+            input_buffer.offset += 1; // Skip the closing quote
+            break;
+        }
+
+        // Handle escape sequences
+        if current_char == b'\\' {
+            input_buffer.offset += 1;
+            let escape_char = input_buffer.buffer_at_offset()[0];
+            match escape_char {
+                b'\"' => output.push(b'\"'),
+                b'\\' => output.push(b'\\'),
+                b'n' => output.push(b'\n'),
+                b't' => output.push(b'\t'),
+                b'r' => output.push(b'\r'),
+                _ => {
+                    println!("Unknown escape sequence: {}", escape_char);
+                    return false;
                 }
-                _ => return false, // Invalid escape sequence
             }
-            input_pointer = &input_pointer[2..];
+        } else {
+            // Add regular characters to the output
+            //println!("pushing to output: {:?}", current_char);
+            output.push(current_char);
         }
+
+        //println!("output buffer: {:?} ", String::from_utf8_lossy(&output));
+        input_buffer.offset += 1;
     }
 
-    // Convert output to a Rust string and set the CJSON item
-    match String::from_utf8(output) {
-        Ok(valuestring) => {
-            item.item_type = CJSON_STRING;
-            item.valuestring = Some(valuestring);
-        }
-        Err(_) => return false, // Invalid UTF-8 sequence
-    }
+    // Convert output to a string and update item
+    item.valuestring = String::from_utf8(output).ok();
+    item.item_type = CJSON_STRING;
 
-    // Update the input buffer offset
-    input_buffer.offset += input_end.len() + 1;
+    //println!("Parsed string: {:?}", item.valuestring);
+
     true
 }
+
+
 
 
 pub fn parse_object(item: &mut CJSON, input_buffer: &mut ParseBuffer) -> bool {
