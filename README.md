@@ -6,6 +6,7 @@ cJSON in Rust
 * When the CI fails, submit error message to ChatGPT!
 * ALL Unit and Integration tests pass!
 * No proper formatting yet, but that is very easy to fix. Same for warnings.
+* Modularization and post translation code improvement for readability suggested below by Copilot.
 ```
 
 ## Refactoring and Modularizing Around the `CJSON` Struct sugested by Copilot
