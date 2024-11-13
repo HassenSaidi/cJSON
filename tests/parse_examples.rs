@@ -37,17 +37,26 @@ fn do_test(test_name: &str) -> Result<(), String> {
         .ok_or("Failed to read or parse test input")?;
 
     // Print the parsed tree back to JSON
-    let actual = cjson_print(&tree)
-        .ok_or("Failed to print tree back to JSON")?;
-
-    // Compare the actual output with the expected output
-    if expected.trim() == actual.trim() {
-        println!("Test '{}' passed!", test_name);
-        Ok(())
-    } else {
-        Err(format!("Test '{}' failed: Output does not match expected", test_name))
+     let expected_parse: Option<Rc<RefCell<CJSON>>> = cjson_parse(&expected);                                                                                                                                                                                                    
+    if let Some(expected_parse: &Rc<RefCell<CJSON>>) = &expected_parse {                                                                                                                                                                                                        
+        // Compare the actual output with the expected output                                                                                                                                                                                                                   
+        let expected_output: String =                                                                                                                                                                                                                                           
+            cjson_print(&expected_parse).ok_or("Failed to print expected_parse back to JSON")?;                                                                                                                                                                                 
+        if expected_output.trim() == actual.trim() {                                                                                                                                                                                                                            
+            println!("Test '{}' passed!", test_name);                                                                                                                                                                                                                           
+            Ok(())                                                                                                                                                                                                                                                              
+        } else {                                                                                                                                                                                                                                                                
+            Err(format!(                                                                                                                                                                                                                                                        
+                "Test '{}' failed: Output does not match expected",                                                                                                                                                                                                             
+                test_name                                                                                                                                                                                                                                                       
+            ))                                                                                                                                                                                                                                                                  
+        }                                                                                                                                                                                                                                                                     
+    } else {                                                                                                                                                                                                                                                                    
+            Err(format!(                                                                                                                                                                                                                                                            
+                "Test '{}' failed: Output does not match expected",                                                                                                                                                                                                                 
+                test_name                                                                                                                                                                                                                                                           
+            ))                                                                                                                                                                                                                                                                      
     }
-}
 
 
 // Helper function to read the file's content
