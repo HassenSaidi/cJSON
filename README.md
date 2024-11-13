@@ -7,5 +7,7 @@ cJSON in Rust
 
 ## ALL Unit and Integration tests pass!
 
+## No proper formatting yet, but that is very easy to fix. Same for warnings.
+
 ## Whole Program Dependency Graph
 ![Dependency Graph](dependency_graph.png)
