@@ -28,35 +28,39 @@ fn do_test(test_name: &str) -> Result<(), String> {
     println!("Looking for expected file at: {:?}", expected_path);
 
     // Read the expected output
-    let expected = read_file(&expected_path)
-        .map_err(|e| format!("Failed to read expected output: {}", e))?;
-
+    let expected =
+        read_file(&expected_path).map_err(|e| format!("Failed to read expected output: {}", e))?;
 
     // Read and parse the test input
-    let tree = parse_file(&test_path)
-        .ok_or("Failed to read or parse test input")?;
+    let tree = parse_file(&test_path).ok_or("Failed to read or parse test input")?;
 
     // Print the parsed tree back to JSON
-     let expected_parse: Option<Rc<RefCell<CJSON>>> = cjson_parse(&expected);                                                                                                                                                                                                    
-    if let Some(expected_parse: &Rc<RefCell<CJSON>>) = &expected_parse {                                                                                                                                                                                                        
-        // Compare the actual output with the expected output                                                                                                                                                                                                                   
-        let expected_output: String =                                                                                                                                                                                                                                           
-            cjson_print(&expected_parse).ok_or("Failed to print expected_parse back to JSON")?;                                                                                                                                                                                 
-        if expected_output.trim() == actual.trim() {                                                                                                                                                                                                                            
-            println!("Test '{}' passed!", test_name);                                                                                                                                                                                                                           
-            Ok(())                                                                                                                                                                                                                                                              
-        } else {                                                                                                                                                                                                                                                                
-            Err(format!(                                                                                                                                                                                                                                                        
-                "Test '{}' failed: Output does not match expected",                                                                                                                                                                                                             
-                test_name                                                                                                                                                                                                                                                       
-            ))                                                                                                                                                                                                                                                                  
-        }                                                                                                                                                                                                                                                                     
-    } else {                                                                                                                                                                                                                                                                    
-            Err(format!(                                                                                                                                                                                                                                                            
-                "Test '{}' failed: Output does not match expected",                                                                                                                                                                                                                 
-                test_name                                                                                                                                                                                                                                                           
-            ))                                                                                                                                                                                                                                                                      
+    let actual = cjson_print(&tree).ok_or("Failed to print tree back to JSON")?;
+
+    //println!("expected {:?}", expected.trim());
+    //println!("actual {:?}", actual.trim());
+
+    let expected_parse = cjson_parse(&expected);
+    if let Some(expected_parse) = &expected_parse {
+        // Compare the actual output with the expected output
+        let expected_output: String =
+            cjson_print(&expected_parse).ok_or("Failed to print expected_parse back to JSON")?;
+        if expected_output.trim() == actual.trim() {
+            println!("Test '{}' passed!", test_name);
+            Ok(())
+        } else {
+            Err(format!(
+                "Test '{}' failed: Output does not match expected",
+                test_name
+            ))
+        }
+    } else {
+        Err(format!(
+            "Test '{}' failed: Output does not match expected",
+            test_name
+        ))
     }
+}
 
 
 // Helper function to read the file's content
